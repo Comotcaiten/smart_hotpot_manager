@@ -1,0 +1,2 @@
+# smart_hotpot_manager
+smart_hotpot_manager
