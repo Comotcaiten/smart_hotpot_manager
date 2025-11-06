@@ -13,15 +13,15 @@ class WelcomeScreen extends StatelessWidget {
           width: 500,
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            // color: Colors.white,
             borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                offset: const Offset(0, 6),
-                blurRadius: 18,
-                color: Colors.black.withValues(alpha: 0.1),
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     offset: const Offset(0, 6),
+            //     blurRadius: 18,
+            //     color: Colors.black.withValues(alpha: 0.1),
+            //   ),
+            // ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

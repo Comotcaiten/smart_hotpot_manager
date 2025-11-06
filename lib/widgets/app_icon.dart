@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 class AppIcon extends StatelessWidget {
   final double size;
 
-  const AppIcon({super.key, this.size = 80});
+  final IconData icon;
+
+  const AppIcon({super.key, this.size = 80, this.icon = Icons.restaurant_menu});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +27,7 @@ class AppIcon extends StatelessWidget {
         ),
       ),
       child: Icon(
-        Icons.restaurant_menu,
+        icon,
         size: size * 0.5,
         color: Colors.white,
       ),
