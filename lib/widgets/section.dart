@@ -46,3 +46,71 @@ class SectionHeaderIconLead extends StatelessWidget {
     );
   }
 }
+
+class ModelInfoSection  extends StatelessWidget {
+  final Map<String, String> titles; // key: fieldName, value: title hiển thị
+  final Map<String, dynamic> contents; // key: fieldName, value: dữ liệu thực tế
+
+  const ModelInfoSection({
+    super.key,
+    required this.titles,
+    required this.contents,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final entry in titles.entries)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tiêu đề
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      entry.value,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // Dữ liệu
+                  Expanded(
+                    child: Text(
+                      '${contents[entry.key] ?? '-'}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

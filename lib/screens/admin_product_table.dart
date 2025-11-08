@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/product.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
@@ -76,8 +75,16 @@ class ProductTableUI extends StatelessWidget {
 
           SizedBox(height: 10),
 
-          // use list sectionObjectAdmin when it ouput on moblie
-          SectionObjectAdmin(titles: ["Tên món", "Danh mục", "qqqqqqqqqqqqqqqqqqqqqqqqqqqq"]),
+          // TODO: use list sectionObjectAdmin when it ouput on moblie
+          // for (int i = 0; i < sampleProducts.length; i++)
+          // ModelInfoSection(
+          //   titles: {
+          //     'name': 'Tên sản phẩm',
+          //     'price': 'Giá',
+          //     'category': 'Danh mục',
+          //   },
+          //   contents: sampleProducts[i].toMap()
+          // ),
         ],
       ),
     );
@@ -128,43 +135,6 @@ class ProductTableUI extends StatelessWidget {
 //   );
 // }
 
-class SectionObjectAdmin extends StatelessWidget {
-  final List<String> titles;
-
-  const SectionObjectAdmin({super.key, required this.titles});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.amber,
-      child: Row(
-
-        children: [
-          //png
-          const SizedBox(width: 12),
-          Container(
-            color: Colors.blue,
-            child: Column(
-
-              children: [
-                for (int i = 0; i < titles.length; i++)
-                  Text(
-                    titles[i],
-                    textAlign: TextAlign.left,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 final List<Product> sampleProducts = [
   Product(
