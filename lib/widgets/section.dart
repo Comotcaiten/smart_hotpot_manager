@@ -1,19 +1,20 @@
 // section.dart
 import 'package:flutter/material.dart';
+import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 
 class SectionHeaderIconLead extends StatelessWidget {
   final String title;
   final String subtitle;
   final double iconSize;
 
-  final Widget? child;
+  final AppIcon? icon;
 
   const SectionHeaderIconLead({
     super.key,
     required this.title,
     required this.subtitle,
     this.iconSize = 40,
-    this.child,
+    this.icon,
   });
 
   @override
@@ -21,7 +22,7 @@ class SectionHeaderIconLead extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        child ?? const SizedBox(width: 1),
+        icon ?? const SizedBox(width: 1),
         const SizedBox(width: 12),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,

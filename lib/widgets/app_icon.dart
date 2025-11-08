@@ -5,7 +5,12 @@ class AppIcon extends StatelessWidget {
 
   final IconData icon;
 
-  const AppIcon({super.key, this.size = 80, this.icon = Icons.restaurant_menu});
+ final List<Color>? colors;
+
+  const AppIcon({    super.key,
+    this.size = 80,
+    this.icon = Icons.restaurant_menu,
+    this.colors,});
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +22,10 @@ class AppIcon extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(radius),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
+          colors: colors ?? [
             Color(0xFFFF7A00),
             Color(0xFFFF2D55),
           ],

@@ -5,7 +5,7 @@ import 'package:smart_hotpot_manager/widgets/section.dart';
 class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
-  final Widget? icon; // icon tuỳ biến
+  final AppIcon? icon; // icon tuỳ biến
 
   const TitleAppBar({
     super.key,
@@ -33,7 +33,7 @@ class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: SectionHeaderIconLead(
                     title: title,
                     subtitle: subtitle,
-                    child: icon ?? const AppIcon(size: 46),
+                    icon: icon ?? const AppIcon(size: 46),
                   ),
                 ),
               ),
