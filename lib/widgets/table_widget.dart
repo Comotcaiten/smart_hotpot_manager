@@ -84,3 +84,21 @@ TableRow productDataRow(
     ],
   );
 }
+
+TableRow categoryDataRow(
+  String name,
+  String categoryId,
+  bool inStock, {
+  bool highlighted = false,
+}) {
+  return TableRow(
+    decoration: BoxDecoration(
+      color: highlighted ? Colors.grey.shade100 : Colors.transparent,
+    ),
+    children: [
+      DataCellWidget(content: name),
+      DataCellWidget(content: categoryId),
+      DataCellWidget(),
+    ],
+  );
+}
