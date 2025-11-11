@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/screens/login_screen.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
+
+enum RoleAccount {none, admin, staff, table}
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -12,16 +13,10 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeHomeState extends State<WelcomeScreen> {
-  void _openLoginScreen() async {
-    Navigator.push(context, MaterialPageRoute(builder: (c) => LoginScreen()));
-
-    // Navigator.push(context, MaterialPageRoute(builder: (c) => ProductTableUI()));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TitleAppBar(title: "Welcome Screen", subtitle: "subtitle"),
+      appBar: TitleAppBar(title: "Smart Hotpot Manager", subtitle: ""),
       body: SingleChildScrollView(
         child: Center(
           child: Container(
@@ -64,7 +59,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
             title: "Đăng nhập Admin",
             subtitle: "Chủ quán - Quản lý toàn bộ hệ thống",
             color: Colors.deepPurple,
-            onPressed: _openLoginScreen,
+            onPressed: () { Navigator.of(context).pushNamed('/login', arguments: RoleAccount.admin);},
           ),
 
           const SizedBox(height: 16),
@@ -73,7 +68,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
             title: "Đăng nhập Nhân viên",
             subtitle: "Nhân viên - Xử lý đơn hàng",
             color: Colors.blueAccent,
-            onPressed: () {},
+            onPressed: () { Navigator.of(context).pushNamed('/login', arguments: RoleAccount.staff);},
           ),
 
           const SizedBox(height: 16),
@@ -82,7 +77,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
             title: "Bàn Khách Hàng",
             subtitle: "Tablet - Menu đặt món",
             color: Colors.deepOrange,
-            onPressed: () {},
+            onPressed: () { Navigator.of(context).pushNamed('/login', arguments: RoleAccount.table);},
           ),
 
           const SizedBox(height: 28),

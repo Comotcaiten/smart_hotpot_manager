@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
-import 'package:smart_hotpot_manager/widgets/app_icon.dart';
-import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
-
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _LoginScreenState();
+  State<StatefulWidget> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
+
+  final _nameController = TextEditingController();
   final _gmailController = TextEditingController();
   final _passController = TextEditingController();
-  final _resIdController = TextEditingController();
+  final _confirmPassController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+
     // Nhận role từ trang Welcome
     final role = ModalRoute.of(context)?.settings.arguments as RoleAccount? ?? RoleAccount.none;
-
-    if (role == RoleAccount.none) {
+    
+    if (role != RoleAccount.admin) {
      // If arguments are null, pop the current route
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pop();
       });
       return Scaffold(
         body: Center(
-          child: Text('No arguments provided. Returning...'),
+          child: Text('Your role dont have permision to enter this screen. Returning...'),
         ),
       );
     }
 
     return Scaffold(
-      appBar: TitleAppBar(title: "Smart Hotpot Manager", subtitle: "Login"),
+      appBar: TitleAppBar(title: "Smart Hotpot Manager", subtitle: "Register"),
       body: SingleChildScrollView(
         child: Center(
           child: Container(
@@ -52,14 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Icon App
-        AppIcon(),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
-        Text(
-          'Đăng nhập với tư cách ${role.name} ',
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        // App name
+        const Text(
+          "Đăng ký tài khoản Admin",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -68,20 +68,28 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
-              if (role == RoleAccount.staff || role == RoleAccount.table) ...[
-                TextField(
-                  controller: _resIdController,
-                  decoration: InputDecoration(
-                    labelText: role == RoleAccount.staff
-                        ? "Mã nhân viên"
-                        : "Mã bàn",
-                    prefixIcon: const Icon(Icons.qr_code),
-                    border: const OutlineInputBorder(),
-                  ),
+
+              /// Name
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _nameController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.mail),
                 ),
-                const SizedBox(height: 16),
-              ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập name';
+                  }
+                  return null;
+                },
+              ),
+
+              /// Gmail
+              const SizedBox(height: 16),
 
               TextFormField(
                 controller: _gmailController,
@@ -99,7 +107,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
 
+              /// Password
               const SizedBox(height: 16),
+
               TextFormField(
                 controller: _passController,
                 keyboardType: TextInputType.text,
@@ -116,22 +126,34 @@ class _LoginScreenState extends State<LoginScreen> {
                 },
               ),
 
+              /// Confirm Password
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _confirmPassController,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm Password',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.password),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Vui lòng nhập password';
+                  }
+                  return null;
+                },
+              ),
+
               const SizedBox(height: 16),
 
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    if (role == RoleAccount.admin) {
-                      Navigator.of(context).pushNamed(AppRoutes.DASHBOARD);
-                    }
-                    else {
-                      Navigator.pop(context);
-                    }
-                  },
+                  onPressed: () { Navigator.pop(context); },
                   icon: const Icon(Icons.save, color: Colors.white),
                   label: const Text(
-                    'Đăng nhập',
+                    'Đăng ký',
                     style: TextStyle(color: Colors.white),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -162,27 +184,22 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
 
-        if (role == RoleAccount.admin) ...[
-        SizedBox(height: 16),
+        SizedBox(height: 16,),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              "Don't have an account?",
-              style: TextStyle(color: Colors.black),
-            ),
-            const SizedBox(width: 4),
+            Text("I have an account?", style: TextStyle(color: Colors.black),),
+            const SizedBox(width: 4,),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pushNamed(AppRoutes.REGISTER, arguments: role);
-              },
-              child: Text("Register"),
-            ),
+                Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: role);
+              }, 
+              child: Text("Login")
+            )
           ],
-        ),
-        ]
-
+        )
       ],
     );
   }
+
 }
