@@ -10,12 +10,12 @@ class ProductCategoryUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final categoryRows = sampleCategory.asMap().entries.map((entry) {
+    final categoriesRow = sampleCategories.asMap().entries.map((entry) {
       final i = entry.key;
       final category = entry.value;
       return categoryDataRow(
         category.name,
-        category.restaurantId,
+        category.amount,
         category.delete,
         highlighted: i.isEven, // xen kẽ màu
       );
@@ -34,7 +34,7 @@ class ProductCategoryUI extends StatelessWidget {
         children: [
           SectionHeaderIconLead(
             title: "Quản lý Danh mục",
-            subtitle: "Thêm, sửa, xóa danh mục",
+            subtitle: "Thêm, sửa, xóa danh mục món ăn",
             icon: AppIcon(
               size: 46,
               icon: Icons.food_bank_rounded,
@@ -47,7 +47,7 @@ class ProductCategoryUI extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm danh mục mới"),
+              label: const Text("Thêm món mới"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
@@ -70,13 +70,13 @@ class ProductCategoryUI extends StatelessWidget {
               4: FlexColumnWidth(1),
             },
             buildHeaderRow: _buildHeaderRow(),
-            buildDataRow: categoryRows,
+            buildDataRow: categoriesRow,
           ),
 
           SizedBox(height: 10),
 
           // use list sectionObjectAdmin when it ouput on moblie
-          SectionObjectAdmin(titles: ["Tên món", "Danh mục", "qqqqqqqqqqqqqqqqqqqqqqqqqqqq"]),
+          // SectionObjectAdmin(titles: ["Tên món", "Danh mục", "qqqqqqqqqqqqqqqqqqqqqqqqqqqq"]),
         ],
       ),
     );
@@ -85,10 +85,9 @@ class ProductCategoryUI extends StatelessWidget {
   TableRow _buildHeaderRow() {
     return const TableRow(
       children: [
-        HeaderCellWidget(content: "Tên Danh mục"),
-        // HeaderCellWidget(content: "Danh mục"),
-        // HeaderCellWidget(content: "Giá"),
-        HeaderCellWidget(content: "Trạng thái"),
+        HeaderCellWidget(content: "Tên danh mục"),
+        HeaderCellWidget(content: "Số lượng"),
+        HeaderCellWidget(content: "Trạng Thái"),
         HeaderCellWidget(content: "Thao tác", align: TextAlign.center),
       ],
     );
@@ -165,37 +164,38 @@ class SectionObjectAdmin extends StatelessWidget {
   }
 }
 
-// Category
-// String restaurantId;
-//   String id;
-//   String name;
-//   String icon;
-//   String amount;
-//   bool delete;
-
-final List<Category> sampleCategory = [
+final List<Category> sampleCategories = [
   Category(
-    restaurantId: 'res001',
-    id: 'cat001',
+    restaurantId: 'r1',
+    id: 'c1',
+    name: 'Nước lẩu',
+    icon: 'assets/icons/appetizer.png',
+    amount: '15',
+    delete: false,
+  ),
+  Category(
+    restaurantId: 'r1',
+    id: 'c2',
     name: 'Thịt',
-    icon: 'https://example.com/icons/meat.png',
-    amount: '100000',
+    icon: 'assets/icons/main_course.png',
+    amount: '25',
     delete: false,
   ),
   Category(
-    restaurantId: 'res001',
-    id: 'cat002',
-    name: 'Hải sản',
-    icon: 'https://example.com/icons/seafood.png',
-    amount: '150000',
-    delete: false,
-  ),
-  Category(
-    restaurantId: 'res001',
-    id: 'cat003',
+    restaurantId: 'r1',
+    id: 'c3',
     name: 'Rau củ',
-    icon: 'https://example.com/icons/vegetables.png',
-    amount: '80000',
+    icon: 'assets/icons/dessert.png',
+    amount: '10',
+    delete: true,
+  ),
+  Category(
+    restaurantId: 'r1',
+    id: 'c4',
+    name: 'Hải sản',
+    icon: 'assets/icons/seafood.png',
+    amount: '20',
     delete: false,
   ),
+  
 ];

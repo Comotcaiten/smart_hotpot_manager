@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 
 class BaseTable extends StatelessWidget {
@@ -87,8 +89,8 @@ TableRow productDataRow(
 
 TableRow categoryDataRow(
   String name,
-  String categoryId,
-  bool inStock, {
+  String amount,
+  bool delete, {
   bool highlighted = false,
 }) {
   return TableRow(
@@ -97,7 +99,6 @@ TableRow categoryDataRow(
     ),
     children: [
       DataCellWidget(content: name),
-      DataCellWidget(content: categoryId),
       DataCellWidget(),
     ],
   );
