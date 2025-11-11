@@ -1,7 +1,18 @@
+// lib/models/order_item.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// Hàm helper
+DateTime _timestampToDateTime(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  }
+  return DateTime.now();
+}
+
 class OrderItem {
   String id;
   String orderId;
-  double price;
+  double price; // <-- Lưu ý: model của bạn không có tên sản phẩm
   int quantity;
   String note;
   DateTime createAt;
@@ -24,8 +35,9 @@ class OrderItem {
       price: (data['price'] ?? 0).toDouble(),
       quantity: data['quantity'] ?? 0,
       note: data['note'] ?? '',
-      createAt: (data['create_at'] as DateTime),
-      updateAt: (data['update_at'] as DateTime),
+      // <-- SỬA: Chuyển đổi Timestamp an toàn
+      createAt: _timestampToDateTime(data['create_at']),
+      updateAt: _timestampToDateTime(data['update_at']),
     );
   }
 

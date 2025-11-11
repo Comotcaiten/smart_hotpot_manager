@@ -1,4 +1,23 @@
-enum StatusOrder {pending, preparing, complete, served, paid}
+// lib/models/order.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// --- BẮT BUỘC PHẢI CÓ CÁC HÀM HELPER NÀY ---
+DateTime _timestampToDateTime(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  }
+  return DateTime.now(); // Trả về an toàn nếu dữ liệu null
+}
+
+StatusOrder _stringToStatus(String? statusName) {
+  return StatusOrder.values.firstWhere(
+    (e) => e.name == statusName,
+    orElse: () => StatusOrder.pending, // Mặc định
+  );
+}
+// ------------------------------------------
+
+enum StatusOrder { pending, preparing, complete, served, paid }
 
 class Order {
   String id;
@@ -9,7 +28,23 @@ class Order {
   DateTime createAt;
   DateTime updateAt;
 
-  String get statusString => status.name;
+  // Sửa lại getter để hiển thị tiếng Việt
+  String get statusString {
+    switch (status) {
+      case StatusOrder.pending:
+        return "Chờ xử lý";
+      case StatusOrder.preparing:
+        return "Đang chuẩn bị";
+      case StatusOrder.complete:
+        return "Hoàn thành";
+      case StatusOrder.served:
+        return "Đã phục vụ";
+      case StatusOrder.paid:
+        return "Đã thanh toán";
+      default:
+        return "Không rõ";
+    }
+  }
 
   Order({
     required this.id,
@@ -26,10 +61,12 @@ class Order {
       id: data['id'] ?? '',
       restaurantId: data['restaurant_id'] ?? '',
       tableId: data['table_id'] ?? '',
-      status: data['status'] ?? StatusOrder.pending.name,
+      // <-- SỬA: Đọc status từ String
+      status: _stringToStatus(data['status']),
       totalAmount: (data['total_amount'] ?? 0).toDouble(),
-      createAt: (data['create_at'] as DateTime),
-      updateAt: (data['update_at'] as DateTime),
+      // <-- SỬA: Chuyển đổi Timestamp an toàn
+      createAt: _timestampToDateTime(data['create_at']),
+      updateAt: _timestampToDateTime(data['update_at']),
     );
   }
 
@@ -38,7 +75,8 @@ class Order {
       'id': id,
       'restaurant_id': restaurantId,
       'table_id': tableId,
-      'status': status,
+      // <-- SỬA: Lưu status dưới dạng String
+      'status': status.name,
       'total_amount': totalAmount,
       'create_at': createAt,
       'update_at': updateAt,
