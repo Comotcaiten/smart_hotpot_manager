@@ -2,16 +2,14 @@ class Category {
   String restaurantId;
   String id;
   String name;
-  String icon;
-  String amount;
+  String description;
   bool delete;
 
   Category({
     required this.restaurantId,
     required this.id,
     required this.name,
-    required this.icon,
-    required this.amount,
+    required this.description,
     required this.delete,
   });
 
@@ -20,8 +18,7 @@ class Category {
       restaurantId: data['restaurantId'],
       id: data['id'] ?? '',
       name: data['name'] ?? '',
-      amount: data['amount'] ?? '',
-      icon: data['icon'] ?? '',
+      description: data['description'] ?? '',
       delete: data['delete'] ?? false,
     );
   }
@@ -31,8 +28,7 @@ class Category {
       'restaurantId': restaurantId,
       'id': id,
       'name': name,
-      'amount': amount,
-      'icon': icon,
+      'description': description,
       'delete': delete,
     };
   }

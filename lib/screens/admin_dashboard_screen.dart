@@ -1,0 +1,92 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
+import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
+
+enum AdminView { overview, categories, menu, table, account, order }
+
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  AdminView _select = AdminView.overview;
+
+  Widget _buildSelectedView() {
+    switch (_select) {
+      case AdminView.menu:
+        return const AdminCategoryScreen();
+      case AdminView.categories:
+        return const AdminCategoryScreen();
+      case AdminView.overview:
+        return const Center(child: Text("Tổng quan hệ thống"));
+      case AdminView.table:
+        return const Center(child: Text("Quản lý bàn"));
+      case AdminView.account:
+        return const Center(child: Text("Quản lý tài khoản"));
+      case AdminView.order:
+        return const Center(child: Text("Quản lý đơn hàng"));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const TitleAppBar(
+        title: "Smart Hotpot Manager",
+        subtitle: "Admin Dashboard",
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 12),
+          CupertinoSlidingSegmentedControl<AdminView>(
+            groupValue: _select,
+            thumbColor: Colors.white,
+            backgroundColor: Colors.grey.shade200,
+            onValueChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _select = value;
+                });
+              }
+            },
+            children: const {
+              AdminView.overview: SegmentText(content: "Overview"),
+              AdminView.categories: SegmentText(content: "Danh mục"),
+              AdminView.menu: SegmentText(content: "Menu"),
+              AdminView.table: SegmentText(content: "Table"),
+              AdminView.order: SegmentText(content: "Order"),
+              AdminView.account: SegmentText(content: "Account"),
+            },
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: _buildSelectedView(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SegmentText extends StatelessWidget {
+  final String content;
+  const SegmentText({super.key, required this.content});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Text(
+        content,
+        style: const TextStyle(color: Colors.black, fontSize: 14),
+      ),
+    );
+  }
+}
