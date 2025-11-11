@@ -4,104 +4,104 @@ import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/section.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 
-class ProductTableUI extends StatelessWidget {
-  const ProductTableUI({super.key});
+// class ProductTableUI extends StatelessWidget {
+//   const ProductTableUI({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final productRows = sampleProducts.asMap().entries.map((entry) {
-      final i = entry.key;
-      final product = entry.value;
-      return productDataRow(
-        product.name,
-        product.categoryId,
-        '${product.price} đ',
-        !product.delete,
-        highlighted: i.isEven, // xen kẽ màu
-      );
-    }).toList();
+//   @override
+//   Widget build(BuildContext context) {
+//     final productRows = sampleProducts.asMap().entries.map((entry) {
+//       final i = entry.key;
+//       final product = entry.value;
+//       return productDataRow(
+//         product.name,
+//         product.categoryId,
+//         '${product.price} đ',
+//         !product.delete,
+//         highlighted: i.isEven, // xen kẽ màu
+//       );
+//     }).toList();
 
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeaderIconLead(
-            title: "Quản lý Menu",
-            subtitle: "Thêm, sửa, xóa món ăn",
-            icon: AppIcon(
-              size: 46,
-              icon: Icons.food_bank_rounded,
-              colors: [Colors.blue, Colors.black],
-            ),
-          ),
-          const SizedBox(height: 16),
+//     return Container(
+//       margin: const EdgeInsets.all(24),
+//       padding: const EdgeInsets.all(16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(16),
+//         border: Border.all(color: Colors.grey.shade300),
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           SectionHeaderIconLead(
+//             title: "Quản lý Menu",
+//             subtitle: "Thêm, sửa, xóa món ăn",
+//             icon: AppIcon(
+//               size: 46,
+//               icon: Icons.food_bank_rounded,
+//               colors: [Colors.blue, Colors.black],
+//             ),
+//           ),
+//           const SizedBox(height: 16),
 
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm món mới"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {},
-            ),
-          ),
+//           Align(
+//             alignment: Alignment.centerRight,
+//             child: ElevatedButton.icon(
+//               icon: const Icon(Icons.add, size: 18),
+//               label: const Text("Thêm món mới"),
+//               style: ElevatedButton.styleFrom(
+//                 backgroundColor: Colors.black,
+//                 foregroundColor: Colors.white,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(8),
+//                 ),
+//               ),
+//               onPressed: () {},
+//             ),
+//           ),
 
-          const SizedBox(height: 16),
+//           const SizedBox(height: 16),
 
-          BaseTable(
-            columnWidths: const {
-              0: FlexColumnWidth(2),
-              1: FlexColumnWidth(2),
-              2: FlexColumnWidth(1.2),
-              3: FlexColumnWidth(1.4),
-              4: FlexColumnWidth(1),
-            },
-            buildHeaderRow: _buildHeaderRow(),
-            buildDataRow: productRows,
-          ),
+//           BaseTable(
+//             columnWidths: const {
+//               0: FlexColumnWidth(2),
+//               1: FlexColumnWidth(2),
+//               2: FlexColumnWidth(1.2),
+//               3: FlexColumnWidth(1.4),
+//               4: FlexColumnWidth(1),
+//             },
+//             buildHeaderRow: _buildHeaderRow(),
+//             buildDataRow: productRows,
+//           ),
 
-          SizedBox(height: 10),
+//           SizedBox(height: 10),
 
-          // TODO: use list sectionObjectAdmin when it ouput on moblie
-          // for (int i = 0; i < sampleProducts.length; i++)
-          // ModelInfoSection(
-          //   titles: {
-          //     'name': 'Tên sản phẩm',
-          //     'price': 'Giá',
-          //     'category': 'Danh mục',
-          //   },
-          //   contents: sampleProducts[i].toMap()
-          // ),
-        ],
-      ),
-    );
-  }
+//           // TODO: use list sectionObjectAdmin when it ouput on moblie
+//           // for (int i = 0; i < sampleProducts.length; i++)
+//           // ModelInfoSection(
+//           //   titles: {
+//           //     'name': 'Tên sản phẩm',
+//           //     'price': 'Giá',
+//           //     'category': 'Danh mục',
+//           //   },
+//           //   contents: sampleProducts[i].toMap()
+//           // ),
+//         ],
+//       ),
+//     );
+//   }
 
-  TableRow _buildHeaderRow() {
-    return const TableRow(
-      children: [
-        HeaderCellWidget(content: "Tên món"),
-        HeaderCellWidget(content: "Danh mục"),
-        HeaderCellWidget(content: "Giá"),
-        HeaderCellWidget(content: "Trạng thái"),
-        HeaderCellWidget(content: "Thao tác", align: TextAlign.center),
-      ],
-    );
-  }
-}
+//   TableRow _buildHeaderRow() {
+//     return const TableRow(
+//       children: [
+//         HeaderCellWidget(content: "Tên món"),
+//         HeaderCellWidget(content: "Danh mục"),
+//         HeaderCellWidget(content: "Giá"),
+//         HeaderCellWidget(content: "Trạng thái"),
+//         HeaderCellWidget(content: "Thao tác", align: TextAlign.center),
+//       ],
+//     );
+//   }
+// }
 
 // ---------------------------------------
 

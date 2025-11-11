@@ -1,9 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/screens/admin_product_table.dart';
+import 'package:smart_hotpot_manager/firebase_options.dart';
+import 'package:smart_hotpot_manager/screens/admin_category_screen.dart';
+import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
 // import 'package:flutter/services.dart';
-import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  runApp(const MyApp());
+}
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,29 +19,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Smart Hopot Manager',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MyPage(),
-    );
-  }
-}
-
-class MyPage extends StatefulWidget {
-  const MyPage({super.key});
-
-  @override
-  State<StatefulWidget> createState() => _MyPageState();
-}
-
-class _MyPageState extends State<MyPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const TitleAppBar(
-        title: "Admin Dashboard",
-        subtitle: "Quản lý quán lẩu",
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
-      body: ProductTableUI(),
+      home: const WelcomeScreen(),
     );
   }
 }
