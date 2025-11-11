@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/firebase_options.dart';
-import 'package:smart_hotpot_manager/screens/admin_category_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
 // import 'package:flutter/services.dart';
 

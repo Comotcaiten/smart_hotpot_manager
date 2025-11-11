@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
-import 'package:smart_hotpot_manager/widgets/section.dart';
+import 'package:smart_hotpot_manager/widgets/section_custom.dart';
+import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
+import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 
 class AdminCategoryScreen extends StatefulWidget {
   const AdminCategoryScreen({super.key});
@@ -13,40 +15,51 @@ class AdminCategoryScreen extends StatefulWidget {
 }
 
 class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
-
   // fire store
 
-  final CategoryService firestoreService = CategoryService();
+  final CategoryService categoryService = CategoryService();
 
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  void _openAddCategory() {
-    _showDialogBuilder(context);
+  Future<void> _saveCategory({Category? category}) async {
+
+    if (category == null) {
+      // Thêm mới
+      final category = Category(
+        restaurantId: "R001",
+        id: "", // id sẽ được gán tự động trong Firestore
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        delete: false,
+      );
+
+      await categoryService.addCategory(category);
+
+    } else {
+      // Cập nhật
+      await categoryService.updateCategory(
+        Category(
+          restaurantId: category.restaurantId,
+          id: category.id,
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          delete: category.delete,
+        ),
+      );
+    }
+
+    if (!mounted) return;
+
+    _nameController.clear();
+    _descriptionController.clear();
+
+    Navigator.pop(context); // đóng modal
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Thêm danh mục thành công!")));
   }
-
-Future<void> _saveCategory() async {
-  final category = Category(
-    restaurantId: "R001",
-    id: "", // id sẽ được gán tự động trong Firestore
-    name: _nameController.text.trim(),
-    description: _descriptionController.text.trim(),
-    delete: false,
-  );
-
-  await firestoreService.addCategory(category);
-
-  _nameController.clear();
-  _descriptionController.clear();
-  
-  if (!mounted) return;
-
-  Navigator.pop(context); // đóng modal
-
-  // ScaffoldMessenger.of(context).showSnackBar(
-  //   const SnackBar(content: Text("Thêm danh mục thành công!")),
-  // );
-}
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +71,6 @@ Future<void> _saveCategory() async {
       body: SingleChildScrollView(
         child: Center(
           child: Container(
-            width: 500,
             padding: const EdgeInsets.all(32),
             child: _buildMainLayout(),
           ),
@@ -103,93 +115,103 @@ Future<void> _saveCategory() async {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: _openAddCategory,
+              onPressed: () {
+                _openAddCategoryModal();
+              },
             ),
           ),
 
           const SizedBox(height: 16),
+
+          _buildCategoryTable(),
         ],
       ),
     );
   }
 
-  Future<void> _showDialogBuilder(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text("Thêm danh mục"),
-            IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.close))
-          ],
-        ),
-        content: Container(
-          width: 500,
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Tên danh mục", style: TextStyle()),
-              SizedBox(height: 8),
-              TextFormField(
-                controller: _nameController,
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(
-                  // labelText: 'Tên danh mục',
-                  hintText: "VD: Nước lẩu",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập tên';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
+  Widget _buildCategoryTable() {
+    return StreamBuilder<List<Category>>(
+      stream: categoryService.getAllCategories(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: CircularProgressIndicator(),
+          );
+        }
 
-              Text("Mô tả"),
-              SizedBox(height: 8),
-              TextFormField(
-                controller: _descriptionController,
-                keyboardType: TextInputType.text,
-                decoration: const InputDecoration(
-                  // labelText: 'Mô tả',
-                  hintText: "VD: Các loại nước lẩu đặc biệt",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập tên';
-                  }
-                  return null;
-                },
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: Text("Chưa có danh mục nào được thêm.")),
+          );
+        }
+
+        final categories = snapshot.data!;
+
+        return BaseTable(
+          columnWidths: const {
+            0: FlexColumnWidth(2),
+            1: FlexColumnWidth(8),
+            2: FlexColumnWidth(2),
+          },
+          buildHeaderRow: const TableRow(
+            children: [
+              HeaderCellWidgetText(content: "Tên danh mục"),
+              HeaderCellWidgetText(content: "Mô tả"),
+              // HeaderCellWidget(content: "Trạng thái", align: TextAlign.center),
+              HeaderCellWidgetText(
+                content: "Thao tác",
+                align: TextAlign.center,
               ),
-              SizedBox(height: 16),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Xử lý lưu dữ liệu
-              _saveCategory();
+          buildDataRow: categories.map((cat) {
+            return TableRow(
+              decoration: BoxDecoration(color: Colors.grey.shade50),
+              children: [
+                DataCellWidgetText(content: cat.name),
+                DataCellWidgetText(content: cat.description),
+                // DataCellWidget(
+                //   content: cat.delete ? "Ẩn" : "Hiển thị",
+                // ),
+                DataCellWidgetAction(
+                  editAction: () async {
+                    _openAddCategoryModal(category: cat);
+                  },
+                  deleteAction: () async {
+                    categoryService.deleteCategory(cat.id);
+                  },
+                ),
+              ],
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
 
-              print("Press Add");
-            },
-            style: ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll<Color>(Colors.black),
-            ),
-            child: const Text("Thêm danh mục", style: TextStyle(color: Colors.white, fontSize: 16),),
+  void _openAddCategoryModal({Category? category}) {
+    _nameController.text = category?.name ?? '';
+    _descriptionController.text = category?.description ?? '';
+    showDialog(
+      context: context,
+      builder: (context) => ModalForm(
+        title: category == null ? "Thêm danh mục" : "Chỉnh sửa danh mục",
+        fields: [
+          FormFieldData(
+            label: "Tên danh mục",
+            hintText: "VD: Nước lẩu",
+            controller: _nameController,
           ),
-        ],
+          FormFieldData(
+            label: "Mô tả",
+            hintText: "VD: Các loại nước lẩu đặc biệt",
+            controller: _descriptionController,
+            isRequired: false,
+          ),
+        ],  
+        onSubmit: () async {_saveCategory(category: category);},
       ),
     );
   }

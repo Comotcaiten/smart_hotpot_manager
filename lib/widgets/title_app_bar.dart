@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
-import 'package:smart_hotpot_manager/widgets/section.dart';
+import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 
 class TitleAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

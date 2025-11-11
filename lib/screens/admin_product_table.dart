@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/product.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
-import 'package:smart_hotpot_manager/widgets/section.dart';
+import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 
 // class ProductTableUI extends StatelessWidget {
@@ -118,19 +118,6 @@ import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 //         inStock ? "Còn hàng" : "Hết hàng",
 //         style: const TextStyle(color: Colors.white, fontSize: 12),
 //       ),
-//     ),
-//   );
-// }
-
-// Widget _actions() {
-//   return Container(
-//     // color: Colors.white,
-//     child: Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-//       children: [
-//         Icon(Icons.edit_outlined, color: Colors.black),
-//         Icon(Icons.delete_outline, color: Colors.red),
-//       ],
 //     ),
 //   );
 // }
