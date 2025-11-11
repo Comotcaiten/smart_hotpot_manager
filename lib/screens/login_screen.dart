@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/screens/admin_category_screen.dart';
+import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
+import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 class LoginScreen extends StatefulWidget {
@@ -109,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminCategoryScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminDashboardScreen()));
                 },
                 icon: const Icon(Icons.save, color: Colors.white),
                 label: const Text(

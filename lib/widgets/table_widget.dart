@@ -85,23 +85,32 @@ class DataCellWidgetAction extends StatelessWidget {
   }
 }
 
-// TableRow productDataRow(
-//   String name,
-//   String category,
-//   String price,
-//   bool inStock, {
-//   bool highlighted = false,
-// }) {
-//   return TableRow(
-//     decoration: BoxDecoration(
-//       color: highlighted ? Colors.grey.shade100 : Colors.transparent,
-//     ),
-//     children: [
-//       DataCellWidget(content: name),
-//       DataCellWidget(content: category),
-//       DataCellWidget(content: price),
-//       DataCellWidget(),
-//       DataCellWidget(),
-//     ],
-//   );
-// }
+class DataCellWidgetBadge extends StatelessWidget {
+  const DataCellWidgetBadge({super.key, required this.option_1, required this.option_2, required this.inStock});
+
+  final bool inStock;
+  
+  final String option_1;
+  final String option_2;
+
+  @override
+  Widget build(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: inStock ? Colors.black : Colors.red.shade400,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          inStock ? option_1 : option_2,
+          style: const TextStyle(color: Colors.white, fontSize: 12),
+        ),
+      ),
+    ),
+  );
+  }
+}

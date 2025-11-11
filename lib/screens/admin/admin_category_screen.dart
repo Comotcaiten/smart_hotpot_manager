@@ -4,7 +4,6 @@ import 'package:smart_hotpot_manager/services/category_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
-import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 
 class AdminCategoryScreen extends StatefulWidget {
@@ -15,7 +14,6 @@ class AdminCategoryScreen extends StatefulWidget {
 }
 
 class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
-  // fire store
 
   final CategoryService categoryService = CategoryService();
 
@@ -23,7 +21,6 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   final _descriptionController = TextEditingController();
 
   Future<void> _saveCategory({Category? category}) async {
-
     if (category == null) {
       // Thêm mới
       final category = Category(
@@ -54,29 +51,46 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     _nameController.clear();
     _descriptionController.clear();
 
+    String notification = category == null ? "Thêm danh mục thành công!" : "Chỉnh sửa thành công";
+
     Navigator.pop(context); // đóng modal
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text("Thêm danh mục thành công!")));
+    ).showSnackBar( SnackBar(
+      content: Text(notification),
+      backgroundColor: Colors.green,
+      )
+    );
+  }
+
+  Future<void> _deleteCategory({Category? category}) async {
+
+    String notification;
+    
+    if (category == null) {
+      notification = "Không thể xóa danh mục";
+    }
+    else {
+      await categoryService.deleteCategory(category.id);
+      
+      notification = "Xóa thành công danh mục ${category.id}";
+    }
+    
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar( SnackBar(
+      content: Text(notification),
+      backgroundColor: Colors.red,
+      )
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: TitleAppBar(
-        title: "Admin Category Dashboard",
-        subtitle: "subtitle",
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.all(32),
-            child: _buildMainLayout(),
-          ),
-        ),
-      ),
-    );
+    return  _buildMainLayout();
   }
 
   Widget _buildMainLayout() {
@@ -93,8 +107,8 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeaderIconLead(
-            title: "Quản lý Menu",
-            subtitle: "Thêm, sửa, xóa món ăn",
+            title: "Quản lý Danh mục",
+            subtitle: "Thêm, sửa, xóa danh mục món ăn",
             icon: AppIcon(
               size: 46,
               icon: Icons.food_bank_rounded,
@@ -136,7 +150,7 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(),
+            child: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -152,14 +166,15 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
         return BaseTable(
           columnWidths: const {
             0: FlexColumnWidth(2),
-            1: FlexColumnWidth(8),
-            2: FlexColumnWidth(2),
+            1: FlexColumnWidth(6),
+            2: FlexColumnWidth(6),
+            3: FlexColumnWidth(2),
           },
           buildHeaderRow: const TableRow(
             children: [
               HeaderCellWidgetText(content: "Tên danh mục"),
               HeaderCellWidgetText(content: "Mô tả"),
-              // HeaderCellWidget(content: "Trạng thái", align: TextAlign.center),
+              HeaderCellWidgetText(content: "Trạng thái", align: TextAlign.left),
               HeaderCellWidgetText(
                 content: "Thao tác",
                 align: TextAlign.center,
@@ -168,19 +183,16 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
           ),
           buildDataRow: categories.map((cat) {
             return TableRow(
-              decoration: BoxDecoration(color: Colors.grey.shade50),
               children: [
                 DataCellWidgetText(content: cat.name),
                 DataCellWidgetText(content: cat.description),
-                // DataCellWidget(
-                //   content: cat.delete ? "Ẩn" : "Hiển thị",
-                // ),
+                DataCellWidgetBadge(option_1: "Hiển thị", option_2: "Ẩn", inStock: !cat.delete),
                 DataCellWidgetAction(
                   editAction: () async {
                     _openAddCategoryModal(category: cat);
                   },
                   deleteAction: () async {
-                    categoryService.deleteCategory(cat.id);
+                    _deleteCategory(category: cat);
                   },
                 ),
               ],

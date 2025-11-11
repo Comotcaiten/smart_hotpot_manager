@@ -5,7 +5,7 @@ class ModalForm extends StatefulWidget {
   final String title; // Tiêu đề modal (VD: "Thêm danh mục")
   final List<FormFieldData> fields; // Danh sách các field (VD: name, description)
   final VoidCallback? onCancel; // Khi bấm Hủy
-  final VoidCallback onSubmit; // Khi bấm Lưu
+  final  Future<void> Function() onSubmit; // Khi bấm Lưu
 
   const ModalForm({
     super.key,
@@ -21,6 +21,7 @@ class ModalForm extends StatefulWidget {
 
 class _ModalFormState extends State<ModalForm> {
   final _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class _ModalFormState extends State<ModalForm> {
           Text(widget.title),
           IconButton(
             icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
+            onPressed: _isSubmitting ? null : () => Navigator.pop(context),
           ),
         ],
       ),
@@ -58,6 +59,7 @@ class _ModalFormState extends State<ModalForm> {
                 TextFormField(
                   controller: field.controller,
                   keyboardType: field.keyboardType,
+                  enabled: !_isSubmitting,
                   decoration: InputDecoration(
                     hintText: field.hintText,
                     border: const OutlineInputBorder(),
@@ -77,13 +79,18 @@ class _ModalFormState extends State<ModalForm> {
       ),
       actions: [
         TextButton(
-          onPressed: widget.onCancel ?? () => Navigator.pop(context),
+          onPressed: _isSubmitting ? null : widget.onCancel ?? () => Navigator.pop(context),
           child: const Text("Hủy"),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: _isSubmitting ? null : () async {
             if (_formKey.currentState?.validate() ?? false) {
-              widget.onSubmit();
+              setState(() => _isSubmitting = true);
+              
+              try {
+               await widget.onSubmit();
+              }
+              finally {}
             }
           },
           style: ElevatedButton.styleFrom(

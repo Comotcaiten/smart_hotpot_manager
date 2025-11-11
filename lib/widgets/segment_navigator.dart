@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 enum AdminView { overview, menu, table, account, order }
 
 class SegmentMenu extends StatefulWidget {
-  const SegmentMenu({super.key, this.child});
+  const SegmentMenu({super.key, required this.mapContents});
 
-  final Widget? child;
+  final Map<AdminView, Map<SegmentText, Widget>>? mapContents;
 
   @override
   State<StatefulWidget> createState() => _SegmentMenuState();
@@ -34,38 +34,40 @@ class _SegmentMenuState extends State<SegmentMenu> {
             },
 
             children: const {
-              AdminView.overview: _SegmentText("Overview"),
-              AdminView.menu: _SegmentText("Menu"),
-              AdminView.table: _SegmentText("Table"),
-              AdminView.order: _SegmentText("Order"),
-              AdminView.account: _SegmentText("Account"),
+              AdminView.overview: SegmentText(content: "Overview"),
+              AdminView.menu: SegmentText(content: "Menu"),
+              AdminView.table: SegmentText(content: "Table"),
+              AdminView.order: SegmentText(content: "Order"),
+              AdminView.account: SegmentText(content: "Account"),
             },
           ),
         ),
 
         child: Center(
-          child:
-              widget.child ??
+          child: Column(
+            children: [
               Text(
-                'Selected Segment: ${_select.name}',
+                'Selected Segment: < ${_select.name} >',
                 style: TextStyle(color: CupertinoColors.black),
               ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _SegmentText extends StatelessWidget {
-  final String text;
-  const _SegmentText(this.text);
+class SegmentText extends StatelessWidget {
+  final String content;
+  const SegmentText({super.key, required this.content});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Text(
-        text,
+        content,
         style: const TextStyle(color: Colors.black, fontSize: 14),
       ),
     );
