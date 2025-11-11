@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
+import 'package:smart_hotpot_manager/screens/admin/admin_product_screen.dart';
+import 'package:smart_hotpot_manager/screens/admin/admin_table_screen.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
 enum AdminView { overview, categories, menu, table, account, order }
@@ -18,13 +20,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildSelectedView() {
     switch (_select) {
       case AdminView.menu:
-        return const AdminCategoryScreen();
+        return const AdminProductScreen();
       case AdminView.categories:
         return const AdminCategoryScreen();
       case AdminView.overview:
         return const Center(child: Text("Tổng quan hệ thống"));
       case AdminView.table:
-        return const Center(child: Text("Quản lý bàn"));
+        return const AdminTableScreen();
       case AdminView.account:
         return const Center(child: Text("Quản lý tài khoản"));
       case AdminView.order:
