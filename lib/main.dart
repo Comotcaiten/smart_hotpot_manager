@@ -4,6 +4,7 @@ import 'package:smart_hotpot_manager/firebase_options.dart';
 import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
 import 'package:smart_hotpot_manager/screens/login_screen.dart';
 import 'package:smart_hotpot_manager/screens/register_screen.dart';
+import 'package:smart_hotpot_manager/screens/staff_home_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
 import 'package:smart_hotpot_manager/utils/app_routes.dart';
 // import 'package:flutter/services.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.LOGIN: (BuildContext context) => LoginScreen(),
         AppRoutes.REGISTER: (BuildContext context) => RegisterScreen(),
         AppRoutes.DASHBOARD: (BuildContext context) => AdminDashboardScreen(),
+        AppRoutes.STAFF_HOME: (BuildContext context) => StaffHomeScreen(),
       },
     );
   }

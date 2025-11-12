@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _gmailController = TextEditingController();
   final _passController = TextEditingController();
-  final _resIdController = TextEditingController();
+  final _roleIdController = TextEditingController();
 
   bool _isLoading = false;
 
@@ -44,6 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Đăng nhập thành công!')));
 
+      Navigator.pushNamed(context, AppRoutes.DASHBOARD);
+
     } on FirebaseAuthException catch (e) {
       String message = 'Đăng nhập thất bại';
       if (e.code == 'user-not-found') {
@@ -63,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
-      setState(() => _isLoading = false);
+      setState(() => _isLoading = false); 
     }
   }
 
@@ -114,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (role == RoleAccount.staff || role == RoleAccount.table) ...[
             TextField(
-              controller: _resIdController,
+              controller: _roleIdController,
               decoration: InputDecoration(
                 labelText: role == RoleAccount.staff
                     ? "Mã nhân viên"
@@ -126,23 +128,25 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 16),
           ],
 
-          TextFormField(
-            controller: _gmailController,
-            decoration: const InputDecoration(
-              labelText: "Gmail",
-              prefixIcon: Icon(Icons.mail),
-              border: OutlineInputBorder(),
+          if (role == RoleAccount.admin || role == RoleAccount.staff) ...[
+            TextFormField(
+              controller: _gmailController,
+              decoration: const InputDecoration(
+                labelText: "Gmail",
+                prefixIcon: Icon(Icons.mail),
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return "Vui lòng nhập Gmail";
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(value.trim())) {
+                  return "Gmail không hợp lệ";
+                }
+                return null;
+              },
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) return "Vui lòng nhập Gmail";
-              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!emailRegex.hasMatch(value.trim())) {
-                return "Gmail không hợp lệ";
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+          ],
 
           PasswordField(
             controller: _passController,

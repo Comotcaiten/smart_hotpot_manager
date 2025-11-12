@@ -16,41 +16,49 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeHomeState extends State<WelcomeScreen> {
   final _authService = AuthService();
 
-  @override
-  void initState() {
-    super.initState();
-    _checkIfLoggedIn();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _checkIfLoggedIn();
+  // }
 
   // TODO: Kiểm tra xem người dùng có đang đăng nhập hay không
-  Future<void> _checkIfLoggedIn() async {
+  Future<void> _handleLogin(RoleAccount selectRole) async {
     // Lấy user hiện tại
     final user = _authService.currentUser;
 
-    // // Nếu user đang đăng nhập
-    // if (user != null) {
-    //   // Lấy thông tin từ Firestore nếu cần
-    //   final doc = await _authService.getRestaurantById(user.uid); // hàm mới thêm bên dưới
+    // Nếu user đang đăng nhập
+    if (user != null) {
+      // Lấy thông tin từ Firestore nếu cần
+      final doc = await _authService.getRestaurantById(user.uid);
+      if (!mounted) return;
 
-    //   if (!mounted) return;
+      if (doc!.role == selectRole) {
+        // Tùy role mà điều hướng sang màn hình tương ứng
+        if (doc.role == RoleAccount.admin) {
+          Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.DASHBOARD, arguments: selectRole);
+        }
+      } else {
+        _authService.logout();
 
-    //   if (doc != null) {
-    //     // Tùy role mà điều hướng sang màn hình tương ứng
-    //     if (doc.role == RoleAccount.admin) {
-    //       Navigator.of(context).pushReplacementNamed('/admin_home');
-    //     } else if (doc.role == RoleAccount.staff) {
-    //       Navigator.of(context).pushReplacementNamed('/staff_home');
-    //     } else {
-    //       Navigator.of(context).pushReplacementNamed('/table_home');
-    //     }
-    //   }
-    // }
+        if (!mounted) return;
+
+        Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: selectRole);
+      }
+    } else {
+      Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: selectRole);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: TitleAppBar(title: "Smart Hotpot Manager", subtitle: ""),
+      appBar: TitleAppBar(
+        title: "Smart Hotpot Manager",
+        subtitle: "Welcome Page",
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Container(
@@ -65,57 +73,63 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
 
   Widget _buildMainLayout(BuildContext context) {
     return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Icon App
-          AppIcon(),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Icon App
+        AppIcon(),
 
-          const SizedBox(height: 20),
+        const SizedBox(height: 20),
 
-          // App name
-          const Text(
-            "Smart Hotpot Manager",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
+        // App name
+        const Text(
+          "Smart Hotpot Manager",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
 
-          const SizedBox(height: 8),
-          const Text(
-            "Ứng dụng Quản lý Quán Lẩu Thông Minh",
-            style: TextStyle(fontSize: 15, color: Colors.black54),
-            textAlign: TextAlign.center,
-          ),
+        const SizedBox(height: 8),
+        const Text(
+          "Ứng dụng Quản lý Quán Lẩu Thông Minh",
+          style: TextStyle(fontSize: 15, color: Colors.black54),
+          textAlign: TextAlign.center,
+        ),
 
-          const SizedBox(height: 32),
+        const SizedBox(height: 32),
 
-          // Buttons
-          ButonRoleCustom(
-            title: "Đăng nhập Admin",
-            subtitle: "Chủ quán - Quản lý toàn bộ hệ thống",
-            color: Colors.deepPurple,
-            onPressed: () { Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: RoleAccount.admin);},
-          ),
+        // Buttons
+        ButonRoleCustom(
+          title: "Đăng nhập Admin",
+          subtitle: "Chủ quán - Quản lý toàn bộ hệ thống",
+          color: Colors.deepPurple,
+          onPressed: () {
+            _handleLogin(RoleAccount.admin);
+          },
+        ),
 
-          const SizedBox(height: 16),
+        const SizedBox(height: 16),
 
-          ButonRoleCustom(
-            title: "Đăng nhập Nhân viên",
-            subtitle: "Nhân viên - Xử lý đơn hàng",
-            color: Colors.blueAccent,
-            onPressed: () { Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: RoleAccount.staff);},
-          ),
+        ButonRoleCustom(
+          title: "Đăng nhập Nhân viên",
+          subtitle: "Nhân viên - Xử lý đơn hàng",
+          color: Colors.blueAccent,
+          onPressed: () {
+            _handleLogin(RoleAccount.staff);
+          },
+        ),
 
-          const SizedBox(height: 16),
+        const SizedBox(height: 16),
 
-          ButonRoleCustom(
-            title: "Bàn Khách Hàng",
-            subtitle: "Tablet - Menu đặt món",
-            color: Colors.deepOrange,
-            onPressed: () { Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: RoleAccount.table);},
-          ),
+        ButonRoleCustom(
+          title: "Bàn Khách Hàng",
+          subtitle: "Tablet - Menu đặt món",
+          color: Colors.deepOrange,
+          onPressed: () {
+            _handleLogin(RoleAccount.table);
+          },
+        ),
 
-          const SizedBox(height: 28),
-        ],
+        const SizedBox(height: 28),
+      ],
     );
   }
 }
