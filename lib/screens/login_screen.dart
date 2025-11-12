@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
+// import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
