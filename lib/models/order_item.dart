@@ -12,7 +12,7 @@ DateTime _timestampToDateTime(dynamic timestamp) {
 class OrderItem {
   String id;
   String orderId;
-  double price; // <-- Lưu ý: model của bạn không có tên sản phẩm
+  double price; 
   int quantity;
   String note;
   DateTime createAt;
@@ -35,9 +35,8 @@ class OrderItem {
       price: (data['price'] ?? 0).toDouble(),
       quantity: data['quantity'] ?? 0,
       note: data['note'] ?? '',
-      // <-- SỬA: Chuyển đổi Timestamp an toàn
-      createAt: _timestampToDateTime(data['create_at']),
-      updateAt: _timestampToDateTime(data['update_at']),
+      createAt: _timestampToDateTime(data['create_at']), // <-- SỬA
+      updateAt: _timestampToDateTime(data['update_at']), // <-- SỬA
     );
   }
 

@@ -9,11 +9,10 @@ DateTime _timestampToDateTime(dynamic timestamp) {
   return DateTime.now(); // Trả về an toàn nếu dữ liệu null
 }
 
-// Hàm helper để đọc Status từ String
 StatusTable _stringToStatus(String? statusName) {
   return StatusTable.values.firstWhere(
     (e) => e.name == statusName,
-    orElse: () => StatusTable.empty, // Mặc định là 'empty'
+    orElse: () => StatusTable.empty,
   );
 }
 
@@ -72,7 +71,6 @@ class TableModel {
       'id': id,
       'name': name,
       'pass': pass,
-      // <-- SỬA: Lưu status dưới dạng String
       'status': status.name,
       'create_at': createAt,
       'update_at': updateAt,
