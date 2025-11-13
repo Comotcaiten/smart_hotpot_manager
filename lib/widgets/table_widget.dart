@@ -59,7 +59,12 @@ class DataCellWidgetText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Text(content ?? "", style: const TextStyle(fontSize: 14)),
+      child: Text(
+        content ?? "", 
+        style: const TextStyle(fontSize: 14),
+        overflow: TextOverflow.ellipsis,
+        softWrap: false,
+      ),
     );
   }
 }

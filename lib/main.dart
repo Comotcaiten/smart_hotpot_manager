@@ -1,7 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/firebase_options.dart';
+import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
+import 'package:smart_hotpot_manager/screens/login_screen.dart';
+import 'package:smart_hotpot_manager/screens/register_screen.dart';
+import 'package:smart_hotpot_manager/screens/staff_home_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
+import 'package:smart_hotpot_manager/utils/app_routes.dart';
 // import 'package:flutter/services.dart';
 
 void main() async {
@@ -10,8 +15,6 @@ void main() async {
 
   runApp(const MyApp());
 }
-
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -25,6 +28,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const WelcomeScreen(),
+      routes: <String, WidgetBuilder> {
+        AppRoutes.WELCOME: (BuildContext context) => WelcomeScreen(),
+        AppRoutes.LOGIN: (BuildContext context) => LoginScreen(),
+        AppRoutes.REGISTER: (BuildContext context) => RegisterScreen(),
+        AppRoutes.DASHBOARD: (BuildContext context) => AdminDashboardScreen(),
+        AppRoutes.STAFF_HOME: (BuildContext context) => StaffHomeScreen(),
+      },
     );
   }
 }

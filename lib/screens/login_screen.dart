@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-// import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
-import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
+import 'package:smart_hotpot_manager/widgets/button_custom.dart';
+import 'package:smart_hotpot_manager/widgets/field_custom.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
+import 'package:smart_hotpot_manager/utils/app_routes.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -11,137 +16,213 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _gmailController = TextEditingController();
   final _passController = TextEditingController();
+  final _restaurantIdController = TextEditingController();
+  final _roleIdController = TextEditingController();
+
+  bool _isLoading = false;
+
+  final _authServices = AuthService();
+
+  Future<void> _loginAdmin() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final Restaurant? restaurant = await _authServices.login(
+        _gmailController.text.trim(),
+        _passController.text.trim(),
+      );
+
+      if (restaurant?.role != RoleAccount.admin) {
+        throw Exception('Tài khoản này không có quyền đăng nhập Admin.');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Đăng nhập thành công!')));
+
+      Navigator.pushNamed(context, AppRoutes.DASHBOARD);
+
+    } on FirebaseAuthException catch (e) {
+      String message = 'Đăng nhập thất bại';
+      if (e.code == 'user-not-found') {
+        message = 'Không tìm thấy tài khoản với email này';
+      } else if (e.code == 'wrong-password') {
+        message = 'Sai mật khẩu, vui lòng thử lại';
+      } else if (e.code == 'invalid-email') {
+        message = 'Email không hợp lệ';
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => _isLoading = false); 
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final role =
+        ModalRoute.of(context)?.settings.arguments as RoleAccount? ??
+        RoleAccount.none;
+
+    if (role == RoleAccount.none) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => Navigator.of(context).pop(),
+      );
+      return const Scaffold(
+        body: Center(child: Text('No arguments provided. Returning...')),
+      );
+    }
+
     return Scaffold(
-      appBar: TitleAppBar(title: "Login Screen", subtitle: "subtitle"),
+      appBar: TitleAppBar(title: "Smart Hotpot Manager", subtitle: "Đăng nhập"),
       body: SingleChildScrollView(
         child: Center(
           child: Container(
             width: 500,
             padding: const EdgeInsets.all(16.0),
-            child: _buildConatinerButtons(context),
+            child: _buildLoginForm(role),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildConatinerButtons(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Icon App
-        AppIcon(),
-
-        const SizedBox(height: 20),
-
-        // App name
-        const Text(
-          "Smart Hotpot Manager",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 8),
-        const Text(
-          "Ứng dụng Quản lý Quán Lẩu Thông Minh",
-          style: TextStyle(fontSize: 15, color: Colors.black54),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 32),
-
-        _buildForm(context),
-      ],
-    );
-  }
-
-  Widget _buildForm(BuildContext context) {
+  Widget _buildLoginForm(RoleAccount role) {
     return Form(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppIcon(),
+          const SizedBox(height: 20),
+
+          Text(
+            'Đăng nhập với tư cách ${role.name}',
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+
+          const SizedBox(height: 32),
+
+          if (role == RoleAccount.staff || role == RoleAccount.table) ...[
+            TextField(
+              controller: _restaurantIdController,
+              decoration: InputDecoration(
+                labelText: "Mã quán",
+                prefixIcon: const Icon(Icons.qr_code),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          if (role == RoleAccount.table) ...[
+            TextField(
+              controller: _roleIdController,
+              decoration: InputDecoration(
+                labelText: "Mã bàn",
+                prefixIcon: const Icon(Icons.qr_code),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          if (role == RoleAccount.admin || role == RoleAccount.staff) ...[
             TextFormField(
               controller: _gmailController,
-              keyboardType: TextInputType.text,
               decoration: const InputDecoration(
-                labelText: 'Gmail',
-                border: OutlineInputBorder(),
+                labelText: "Gmail",
                 prefixIcon: Icon(Icons.mail),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập gmail';
-                }
-                // if (double.tryParse(value) == null) {
-                //   return 'Số tiền không hợp lệ';
-                // }
-                return null;
-              },
-            ),
-            
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _passController,
-              keyboardType: TextInputType.text,
-              decoration: const InputDecoration(
-                labelText: 'Password',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.password),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Vui lòng nhập password';
+                if (value == null || value.isEmpty) return "Vui lòng nhập Gmail";
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(value.trim())) {
+                  return "Gmail không hợp lệ";
                 }
-                // if (double.tryParse(value) == null) {
-                //   return 'Số tiền không hợp lệ';
-                // }
                 return null;
               },
             ),
-
             const SizedBox(height: 16),
+          ],
 
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminDashboardScreen()));
-                },
-                icon: const Icon(Icons.save, color: Colors.white),
-                label: const Text(
-                  'Đăng nhập',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                ),
-              ),
-            ),
+          PasswordField(
+            controller: _passController,
+            labelText: "Mật khẩu",
+            prefixIcon: Icon(Icons.lock),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Vui lòng nhập mật khẩu";
+              }
+              if (value.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
+              return null;
+            },
+          ),
 
+          const SizedBox(height: 24),
+
+          _isLoading
+              ? const CircularProgressIndicator()
+              : Column(
+                  children: [
+                    ExpandedButtonIcon(
+                      onPressed: () async {
+                        if (role == RoleAccount.admin) {
+                          await _loginAdmin();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Role này chưa hỗ trợ đăng nhập'),
+                            ),
+                          );
+                        }
+                      },
+                      label: "Đăng nhập",
+                      icon: const Icon(Icons.login, color: Colors.white),
+                      backgroundColor: Colors.blueAccent,
+                    ),
+                    const SizedBox(height: 16),
+
+                    ExpandedButtonIcon(
+                      onPressed: () => Navigator.pop(context),
+                      label: "Thoát",
+                      icon: const Icon(Icons.exit_to_app, color: Colors.white),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  ],
+                ),
+
+          if (role == RoleAccount.admin) ...[
             const SizedBox(height: 16),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context, true);
-                },
-                icon: const Icon(Icons.exit_to_app, color: Colors.white),
-                label: const Text(
-                  'Thoát',
-                  style: TextStyle(color: Colors.white),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Chưa có tài khoản? "),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.REGISTER, arguments: role);
+                  },
+                  child: const Text("Đăng ký ngay"),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                ),
-              ),
+              ],
             ),
           ],
+        ],
       ),
     );
   }

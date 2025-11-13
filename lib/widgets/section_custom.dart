@@ -31,7 +31,7 @@ class SectionHeaderIconLead extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
@@ -47,14 +47,19 @@ class SectionHeaderIconLead extends StatelessWidget {
   }
 }
 
-class ModelInfoSection  extends StatelessWidget {
+class ModelInfoSection extends StatelessWidget {
   final Map<String, String> titles; // key: fieldName, value: title hiển thị
   final Map<String, dynamic> contents; // key: fieldName, value: dữ liệu thực tế
+
+  final VoidCallback editAction;
+  final VoidCallback deleteAction;
 
   const ModelInfoSection({
     super.key,
     required this.titles,
     required this.contents,
+    required this.editAction,
+    required this.deleteAction,
   });
 
   @override
@@ -85,7 +90,6 @@ class ModelInfoSection  extends StatelessWidget {
                 children: [
                   // Tiêu đề
                   SizedBox(
-                    width: 100,
                     child: Text(
                       entry.value,
                       style: const TextStyle(
@@ -109,6 +113,33 @@ class ModelInfoSection  extends StatelessWidget {
                 ],
               ),
             ),
+          const SizedBox(height: 8),
+
+          Row(
+            children: [
+              Text(
+                "Thao tác:",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+
+              SizedBox(width: 16,),
+
+              IconButton(
+                onPressed: editAction,
+                icon: Icon(Icons.edit_outlined, color: Colors.black),
+              ),
+              
+              SizedBox(width: 16,),
+
+              IconButton(
+                onPressed: deleteAction,
+                icon: Icon(Icons.delete_outline, color: Colors.red),
+              ),
+            ],
+          ),
         ],
       ),
     );

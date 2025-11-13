@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
-import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
@@ -14,7 +13,6 @@ class AdminCategoryScreen extends StatefulWidget {
 }
 
 class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
-
   final CategoryService categoryService = CategoryService();
 
   final _nameController = TextEditingController();
@@ -32,7 +30,6 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
       );
 
       await categoryService.addCategory(category);
-
     } else {
       // Cập nhật
       await categoryService.updateCategory(
@@ -51,46 +48,38 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     _nameController.clear();
     _descriptionController.clear();
 
-    String notification = category == null ? "Thêm danh mục thành công!" : "Chỉnh sửa thành công";
+    String notification = category == null
+        ? "Thêm danh mục thành công!"
+        : "Chỉnh sửa thành công";
 
     Navigator.pop(context); // đóng modal
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar( SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.green,
-      )
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.green),
     );
   }
 
   Future<void> _deleteCategory({Category? category}) async {
-
     String notification;
-    
+
     if (category == null) {
       notification = "Không thể xóa danh mục";
-    }
-    else {
+    } else {
       await categoryService.deleteCategory(category.id);
-      
+
       notification = "Xóa thành công danh mục ${category.id}";
     }
-    
+
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar( SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.red,
-      )
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.red),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return  _buildMainLayout();
+    return _buildMainLayout();
   }
 
   Widget _buildMainLayout() {
@@ -109,11 +98,6 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
           SectionHeaderIconLead(
             title: "Quản lý Danh mục",
             subtitle: "Thêm, sửa, xóa danh mục món ăn",
-            icon: AppIcon(
-              size: 46,
-              icon: Icons.food_bank_rounded,
-              colors: [Colors.blue, Colors.black],
-            ),
           ),
           const SizedBox(height: 16),
 
@@ -137,69 +121,9 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
 
           const SizedBox(height: 16),
 
-          _buildCategoryTable(),
+          _buildCategoryViews(),
         ],
       ),
-    );
-  }
-
-  Widget _buildCategoryTable() {
-    return StreamBuilder<List<Category>>(
-      stream: categoryService.getAllCategories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có danh mục nào được thêm.")),
-          );
-        }
-
-        final categories = snapshot.data!;
-
-        return BaseTable(
-          columnWidths: const {
-            0: FlexColumnWidth(2),
-            1: FlexColumnWidth(6),
-            2: FlexColumnWidth(6),
-            3: FlexColumnWidth(2),
-          },
-          buildHeaderRow: const TableRow(
-            children: [
-              HeaderCellWidgetText(content: "Tên danh mục"),
-              HeaderCellWidgetText(content: "Mô tả"),
-              HeaderCellWidgetText(content: "Trạng thái", align: TextAlign.left),
-              HeaderCellWidgetText(
-                content: "Thao tác",
-                align: TextAlign.center,
-              ),
-            ],
-          ),
-          buildDataRow: categories.map((cat) {
-            return TableRow(
-              children: [
-                DataCellWidgetText(content: cat.name),
-                DataCellWidgetText(content: cat.description),
-                DataCellWidgetBadge(option_1: "Hiển thị", option_2: "Ẩn", inStock: !cat.delete),
-                DataCellWidgetAction(
-                  editAction: () async {
-                    _openAddCategoryModal(category: cat);
-                  },
-                  deleteAction: () async {
-                    _deleteCategory(category: cat);
-                  },
-                ),
-              ],
-            );
-          }).toList(),
-        );
-      },
     );
   }
 
@@ -222,9 +146,87 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
             controller: _descriptionController,
             isRequired: false,
           ),
-        ],  
-        onSubmit: () async {_saveCategory(category: category);},
+        ],
+        onSubmit: () async {
+          _saveCategory(category: category);
+        },
       ),
+    );
+  }
+
+  Widget _buildCategoryViews() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+
+        return StreamBuilder<List<Category>>(
+          stream: categoryService.getAllCategories(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: Text("Chưa có danh mục nào được thêm.")),
+              );
+            }
+
+            final categories = snapshot.data!;
+
+            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+            if (isWide) {
+              return BaseTable(
+                columnWidths: const {
+                  0: FlexColumnWidth(2),
+                  1: FlexColumnWidth(6),
+                  2: FlexColumnWidth(4),
+                },
+                buildHeaderRow: const TableRow(
+                  children: [
+                    HeaderCellWidgetText(content: "Tên danh mục"),
+                    HeaderCellWidgetText(content: "Mô tả"),
+                    HeaderCellWidgetText(
+                      content: "Thao tác",
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+                buildDataRow: categories.map((cat) {
+                  return TableRow(
+                    children: [
+                      DataCellWidgetText(content: cat.name),
+                      DataCellWidgetText(content: cat.description),
+                      DataCellWidgetAction(
+                        editAction: () => _openAddCategoryModal(category: cat),
+                        deleteAction: () => _deleteCategory(category: cat),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            } else {
+              return Column(
+                children: categories.map((cat) {
+                  return ModelInfoSection(
+                    titles: {
+                      'name':'Tên:',
+                      'description': 'Mô tả:'
+                    }, 
+                    contents: cat.toMap(),
+                    editAction: () => _openAddCategoryModal(category: cat),
+                    deleteAction: () => _deleteCategory(category: cat),
+                  );
+               }).toList(),
+              );
+            }
+          },
+        );
+      },
     );
   }
 }

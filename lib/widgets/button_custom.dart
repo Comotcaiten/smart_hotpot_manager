@@ -27,7 +27,9 @@ class _ButtonCustomRoleState extends State<ButonRoleCustom> {
       onPressed: widget.onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: widget.color,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadiusGeometry.circular(16),
+        ),
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -49,6 +51,32 @@ class _ButtonCustomRoleState extends State<ButonRoleCustom> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ExpandedButtonIcon extends StatelessWidget {
+
+  final Widget? icon;
+  final String label;
+  final ButtonStyle? style;
+
+  final Color? backgroundColor;
+
+  final VoidCallback onPressed;
+
+  const ExpandedButtonIcon({super.key, this.icon, required this.label, required this.onPressed, this.style, this.backgroundColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: icon,
+        label: Text(label, style: TextStyle(color: Colors.white)),
+        style: style ?? ElevatedButton.styleFrom(backgroundColor: backgroundColor ?? Colors.redAccent),
       ),
     );
   }

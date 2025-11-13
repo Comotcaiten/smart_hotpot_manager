@@ -1,9 +1,12 @@
+import 'package:smart_hotpot_manager/models/restaurant.dart';
+
 class Staff {
   String restaurantId;
   String id;
   String name;
   String gmail;
   String pass;
+  RoleAccount role;
   DateTime createAt;
   DateTime updateAt;
 
@@ -13,6 +16,7 @@ class Staff {
     required this.name,
     required this.gmail,
     required this.pass,
+    this.role = RoleAccount.staff,
     required this.createAt,
     required this.updateAt,
   });
@@ -24,6 +28,10 @@ class Staff {
       name: data['name'] ?? '',
       gmail: data['gmail'] ?? '',
       pass: data['pass'] ?? '',
+      role: RoleAccount.values.firstWhere(
+        (e) => e.name == data['role'],
+        orElse: () => RoleAccount.staff,
+      ),
       createAt: (data['create_at'] as DateTime),
       updateAt: (data['update_at'] as DateTime),
     );
@@ -36,6 +44,7 @@ class Staff {
       'name': name,
       'gmail': gmail,
       'pass': pass,
+      'role': role.name,
       'create_at': createAt,
       'update_at': updateAt,
     };
