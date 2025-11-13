@@ -91,13 +91,14 @@ class DataCellWidgetAction extends StatelessWidget {
 }
 
 class DataCellWidgetBadge extends StatelessWidget {
-  const DataCellWidgetBadge({super.key, required this.option_1, required this.option_2, required this.inStock});
+  const DataCellWidgetBadge({super.key, required this.option_1, required this.option_2, this.option_3, required this.inStock});
 
   final bool inStock;
   
   final String option_1;
   final String option_2;
-
+  final String? option_3;
+  
   @override
   Widget build(BuildContext context) {
   return Padding(
