@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
-import 'package:smart_hotpot_manager/models/staff.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
@@ -20,25 +19,25 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _gmailController = TextEditingController();
   final _passController = TextEditingController();
-  final _restaurantIdController = TextEditingController();
-  final _roleIdController = TextEditingController();
 
   bool _isLoading = false;
 
   final _authServices = AuthService();
 
-  Future<void> _loginStaff() async {
+  Future<void> _loginAccount(RoleAccount role) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
     try {
-      final Staff? staff = await _authServices.loginStaff(
+      final Account? account = await _authServices.login(
         _gmailController.text.trim(),
         _passController.text.trim(),
       );
 
-      if (staff?.role != RoleAccount.staff) {
-        throw Exception('Tài khoản này không có quyền đăng nhập Staff.');
+      if (account?.role != role) {
+        throw Exception(
+          'Tài khoản này không có quyền để đăng nhập vào chức năng này.',
+        );
       }
 
       if (!mounted) return;
@@ -46,7 +45,15 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Đăng nhập thành công!')));
 
-      Navigator.pushNamed(context, AppRoutes.DASHBOARD);
+      if (role == RoleAccount.admin) {
+        Navigator.pushNamed(context, AppRoutes.DASHBOARD);
+      } else if (role == RoleAccount.staff) {
+        Navigator.pushNamed(context, AppRoutes.STAFF_HOME);
+        // _notification();
+
+      } else if (role == RoleAccount.table) {
+        _notification();
+      }
 
     } on FirebaseAuthException catch (e) {
       String message = 'Đăng nhập thất bại';
@@ -61,58 +68,19 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
-      
     } catch (e) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
-      setState(() => _isLoading = false); 
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _loginAdmin() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-
-    try {
-      final Restaurant? restaurant = await _authServices.login(
-        _gmailController.text.trim(),
-        _passController.text.trim(),
-      );
-
-      if (restaurant?.role != RoleAccount.admin) {
-        throw Exception('Tài khoản này không có quyền đăng nhập Admin.');
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Đăng nhập thành công!')));
-
-      Navigator.pushNamed(context, AppRoutes.DASHBOARD);
-
-    } on FirebaseAuthException catch (e) {
-      String message = 'Đăng nhập thất bại';
-      if (e.code == 'user-not-found') {
-        message = 'Không tìm thấy tài khoản với email này';
-      } else if (e.code == 'wrong-password') {
-        message = 'Sai mật khẩu, vui lòng thử lại';
-      } else if (e.code == 'invalid-email') {
-        message = 'Email không hợp lệ';
-      }
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-      
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    } finally {
-      setState(() => _isLoading = false); 
-    }
+  void _notification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Role này chưa được hỗ trợ')),
+    );
   }
 
   @override
@@ -160,49 +128,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
           const SizedBox(height: 32),
 
-          if (role == RoleAccount.staff || role == RoleAccount.table) ...[
-            TextField(
-              controller: _restaurantIdController,
-              decoration: InputDecoration(
-                labelText: "Mã quán",
-                prefixIcon: const Icon(Icons.qr_code),
-                border: const OutlineInputBorder(),
-              ),
+          TextFormField(
+            controller: _gmailController,
+            decoration: const InputDecoration(
+              labelText: "Gmail",
+              prefixIcon: Icon(Icons.mail),
+              border: OutlineInputBorder(),
             ),
-            const SizedBox(height: 16),
-          ],
-
-          if (role == RoleAccount.table) ...[
-            TextField(
-              controller: _roleIdController,
-              decoration: InputDecoration(
-                labelText: "Mã bàn",
-                prefixIcon: const Icon(Icons.qr_code),
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          if (role == RoleAccount.admin || role == RoleAccount.staff) ...[
-            TextFormField(
-              controller: _gmailController,
-              decoration: const InputDecoration(
-                labelText: "Gmail",
-                prefixIcon: Icon(Icons.mail),
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) return "Vui lòng nhập Gmail";
-                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                if (!emailRegex.hasMatch(value.trim())) {
-                  return "Gmail không hợp lệ";
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+            validator: (value) {
+              if (value == null || value.isEmpty) return "Vui lòng nhập Gmail";
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(value.trim())) {
+                return "Gmail không hợp lệ";
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
 
           PasswordField(
             controller: _passController,
@@ -225,13 +167,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     ExpandedButtonIcon(
                       onPressed: () async {
-                        if (role == RoleAccount.admin) {
-                          await _loginAdmin();
-                        } 
-                        else if (role == RoleAccount.staff) {
-                          await _loginStaff();
-                        }
-                        else {
+                        if (role != RoleAccount.none) {
+                          await _loginAccount(role);
+                        } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Role này chưa hỗ trợ đăng nhập'),

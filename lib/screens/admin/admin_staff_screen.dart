@@ -1,65 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/staff.dart';
-import 'package:smart_hotpot_manager/services/staff_services.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 
-class AdminStaffScreen extends StatefulWidget {
-  const AdminStaffScreen({super.key});
+class AdminAccountcreen extends StatefulWidget {
+  const AdminAccountcreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _AdminStaffScreenState();
+  State<StatefulWidget> createState() => _AdminAccountcreenState();
 }
 
-class _AdminStaffScreenState extends State<AdminStaffScreen> {
-  final StaffService _staffService = StaffService();
+class _AdminAccountcreenState extends State<AdminAccountcreen> {
 
+  // Controller
   final _nameController = TextEditingController();
   final _gmailController = TextEditingController();
   final _passContoller = TextEditingController();
+  String? _selectedRole;
 
-  Future<String> setIdRestaurant() async {
-    String? restaurantId = await _staffService.getIdRestaurant();
-    return restaurantId;
-  }
+  // Services
+  final _authService = AuthService();
 
-  Future<void> _saveStaff({Staff? staff, String? oldPass}) async {
-    if (staff == null) {
+  Future<void> _saveStaff({Account? account, String? oldPass}) async {
+    final roleEnum = RoleAccount.values.firstWhere(
+      (role) => role.name == _selectedRole,
+      orElse: () => RoleAccount.staff, // giá trị mặc định nếu không khớp
+    );
+
+    if (account == null) {
       // Thêm mới
-      final data = Staff(
+
+      final data = Account(
         restaurantId: "restaurantId", 
         id: "id", 
         name: _nameController.text.trim(), 
         gmail: _gmailController.text.trim(), 
-        pass: _passContoller.text.trim());
+        pass: _passContoller.text.trim(),
+        role: roleEnum);
 
-      await _staffService.addStaff(data);
+      await _authService.registerStaff(data);
     }
     else {
       // Cập nhập
-      await _staffService.updateStaff(oldPass!, Staff(
-        restaurantId: staff.restaurantId, 
-        id: staff.id, 
+      await _authService.updateStaffAccount(oldPass: oldPass!, newStaff: Account(
+        restaurantId: account.restaurantId, 
+        id: account.id, 
         name: _nameController.text.trim(), 
-        gmail: staff.gmail, 
-        pass: _passContoller.text.trim()));
+        gmail: account.gmail, 
+        pass: _passContoller.text.trim(),
+        role: roleEnum,
+        ),
+      );
     }
 
-    _notification(staff);
+    _nameController.clear();
+    _gmailController.clear();
+    _passContoller.clear();
+
+    String notification = account == null
+        ? "Thêm danh mục thành công!"
+        : "Chỉnh sửa thành công";
+    Navigator.pop(context); // đóng modal
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.green),
+    );
 
   }
 
-  Future<void> _deleteStaff({Staff? staff}) async {
+  Future<void> _deleteAccount({Account? account}) async {
     String notification;
 
-    if (staff == null) {
+    if (account == null) {
       notification = "Không thể xóa danh mục";
     } else {
-      await _staffService.deleteStaff(staff);
+      await _authService.deleteStaffAccount(account);
 
-      notification = "Xóa thành công staff ${staff.id}";
+      notification = "Xóa thành công staff ${account.id}";
     }
 
     if (!mounted) return;
@@ -69,23 +89,9 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
     );
   }
 
-  Future<void> _notification(Staff? staff) async {
-    _nameController.clear();
-    _gmailController.clear();
-    _passContoller.clear();
-
-    String notification = staff == null
-        ? "Thêm danh mục thành công!"
-        : "Chỉnh sửa thành công";
-    Navigator.pop(context); // đóng modal
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(notification), backgroundColor: Colors.green),
-    );
-  }
 
   @override
-  Widget build(Object context) {
+  Widget build(BuildContext context) {
     return _buildMainLayout();
   }
 
@@ -125,32 +131,35 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
           ),
 
           const SizedBox(height: 16),
-          
+
           _buildViews(),
         ],
       ),
     );
   }
 
-  void _openSaveModal({Staff? staff}) {
 
-    _nameController.text = staff?.name ?? "";
-    _gmailController.text = staff?.gmail ?? "";
-    _passContoller.text = staff?.pass ?? "";
+  void _openSaveModal({Account? account}) {
+
+    _nameController.text = account?.name ?? "";
+    _gmailController.text = account?.gmail ?? "";
+    _passContoller.text = account?.pass ?? "";
 
     final oldPass = _passContoller.text;
+    
+    _selectedRole = account?.role.name.toString();
 
     showDialog(
       context: context,
       builder: (context) => ModalForm(
-        title: staff == null ? "Thêm staff" : "Chỉnh sửa staff",
+        title: account == null ? "Thêm account" : "Chỉnh sửa account",
         fields: [
 
-          if(staff != null) ...[
+          if(account != null) ...[
             FormFieldDataText(
               controller: TextEditingController(),
               label: "Mã nhân viên",
-              hintText: staff.id.toString(),
+              hintText: account.id.toString(),
               disable: true,
             ),
           ],
@@ -175,7 +184,7 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
             hintText: "VD: nguyenvana@gmail.com",
             controller: _gmailController,
             keyboardType: TextInputType.emailAddress,
-            disable: staff != null, 
+            disable: account != null, 
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return "Vui lòng nhập Gmail";
@@ -201,8 +210,18 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
               return null;
             },
           ),
+          FormFieldDataDropDown(
+            label: "Vai trò",
+            hintText: "Chọn vai trò",
+            stream: _authService.roleNamesStream,
+            selectedValue: _selectedRole,
+            onChanged: (value) => {
+              _selectedRole = value.toString(),
+            },
+            validator: (value) => value == null ? "Vui lòng chọn danh mục" : null,
+          ),
         ],
-        onSubmit: () async {_saveStaff(staff: staff, oldPass: oldPass);},
+        onSubmit: () async {_saveStaff(account: account, oldPass: oldPass);},
       ),
     );
   }
@@ -213,7 +232,7 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
         final isWide = constraints.maxWidth >= 900;
 
         return FutureBuilder<String>(
-          future: _staffService.getIdRestaurant(),
+          future: _authService.getIdRestaurant(),
           builder: (context, asyncSnapshot) {
 
             if (asyncSnapshot.connectionState == ConnectionState.waiting) {
@@ -226,8 +245,8 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
 
             final restaurantId = asyncSnapshot.data!;
 
-            return StreamBuilder<List<Staff>>(
-              stream: _staffService.getAllStaffsByRestaurant(restaurantId),
+            return StreamBuilder<List<Account>>(
+              stream: _authService.getAllStaffsByRestaurant(restaurantId),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Padding(
@@ -253,13 +272,15 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
                       1: FlexColumnWidth(1),
                       2: FlexColumnWidth(6),
                       3: FlexColumnWidth(4),
-                      4: FlexColumnWidth(4),
+                      4: FlexColumnWidth(2),
+                      5: FlexColumnWidth(4),
                     },
                     buildHeaderRow: const TableRow(
                       children: [
                         HeaderCellWidgetText(content: "ID:"),
                         HeaderCellWidgetText(content: "Tên"),
                         HeaderCellWidgetText(content: "Gmail"),
+                        HeaderCellWidgetText(content: "Role"),
                         HeaderCellWidgetText(
                           content: "Thao tác",
                           align: TextAlign.center,
@@ -272,9 +293,10 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
                           DataCellWidgetText(content: cat.id),
                           DataCellWidgetText(content: cat.name),
                           DataCellWidgetText(content: cat.gmail),
+                          DataCellWidgetText(content: cat.role.name),
                           DataCellWidgetAction(
-                            editAction: () => _openSaveModal(staff: cat),
-                            deleteAction: () => {_deleteStaff(staff: cat)},
+                            editAction: () => _openSaveModal(account: cat),
+                            deleteAction: () => _deleteAccount(account: cat),
                           ),
                         ],
                       );
@@ -287,11 +309,12 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
                         titles: {
                           'id':'Mã nhân viên:',
                           'name':'Tên:',
-                          'gmail': 'Gmail:'
+                          'gmail': 'Gmail:',
+                          'role': "Role"
                         }, 
                         contents: cat.toMap(),
-                        editAction: () => _openSaveModal(staff: cat),
-                        deleteAction: () => {},
+                        editAction: () => _openSaveModal(account: cat),
+                        deleteAction: () => _deleteAccount(account: cat),
                       );
                    }).toList(),
                   );
@@ -303,4 +326,5 @@ class _AdminStaffScreenState extends State<AdminStaffScreen> {
       },
     );
   }
+
 }

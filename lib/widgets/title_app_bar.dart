@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
@@ -26,7 +25,6 @@ class TitleAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _TitleAppBarState extends State<TitleAppBar> {
   final AuthService _authService = AuthService();
-  Restaurant? _user;
   bool _isLoading = true;
 
   @override
@@ -36,10 +34,8 @@ class _TitleAppBarState extends State<TitleAppBar> {
   }
 
   Future<void> _loadUser() async {
-    final user = await _authService.getRestaurant();
     if (mounted) {
       setState(() {
-        _user = user;
         _isLoading = false;
       });
     }
@@ -57,10 +53,7 @@ class _TitleAppBarState extends State<TitleAppBar> {
           automaticallyImplyLeading: isMobile,
           flexibleSpace: Stack(
             children: [
-              if (!isMobile)
-                _buildDesktopHeader()
-              else
-                _buildMobileHeader(),
+              if (!isMobile) _buildDesktopHeader() else _buildMobileHeader(),
 
               // line bottom
               Positioned(
@@ -117,7 +110,7 @@ class _TitleAppBarState extends State<TitleAppBar> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(width: 16,),
+                SizedBox(width: 16),
                 SectionHeaderIconLead(
                   title: widget.title,
                   subtitle: widget.subtitle,
@@ -126,8 +119,9 @@ class _TitleAppBarState extends State<TitleAppBar> {
               ],
             ),
             const SizedBox(height: 8),
-            if (_authService.currentUser != null)
+            if (_authService.currentUser != null) ...[
               _outlinedAuth(context),
+            ],
           ],
         ),
       ),
@@ -136,33 +130,49 @@ class _TitleAppBarState extends State<TitleAppBar> {
 
   /// Widget hiển thị tên và nút đăng xuất
   Widget _outlinedAuth(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min, // để nội dung không chiếm hết chiều ngang
-      children: [
-        if (!_isLoading)
-          Text(
-            _user != null ? "Xin chào, ${_user!.name}" : "",
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
+    return FutureBuilder(
+      future: _authService.getAccout(),
+      builder: (context, asyncSnapshot) {
+
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Xin hãy đăng nhập'));
+        }
+        
+        final user = asyncSnapshot.data!;
+
+        return Row(
+          mainAxisSize:
+              MainAxisSize.min, // để nội dung không chiếm hết chiều ngang
+          children: [
+            if (!_isLoading)
+              Text(
+                "Xin chào, ${user.name}",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+                overflow: TextOverflow.fade,
+                softWrap: false,
+              ),
+            const SizedBox(width: 8.0),
+            OutlinedButton(
+              onPressed: () async {
+                await _authService.logout();
+                if (context.mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.WELCOME,
+                    (route) => false,
+                  );
+                }
+              },
+              child: const Text("Đăng xuất"),
             ),
-            overflow: TextOverflow.fade,
-            softWrap: false,
-          ),
-        const SizedBox(width: 8.0),
-        OutlinedButton(
-          onPressed: () async {
-            await _authService.logout();
-            if (context.mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.WELCOME,
-                (route) => false,
-              );
-            }
-          },
-          child: const Text("Đăng xuất"),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

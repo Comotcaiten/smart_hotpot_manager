@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
@@ -13,16 +14,20 @@ class AdminCategoryScreen extends StatefulWidget {
 }
 
 class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
-  final CategoryService categoryService = CategoryService();
-
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
 
+  // Services
+  final _authService = AuthService();
+  final CategoryService categoryService = CategoryService();
+
   Future<void> _saveCategory({Category? category}) async {
+    final res = await _authService.getAccout();
+
     if (category == null) {
       // Thêm mới
       final category = Category(
-        restaurantId: "R001",
+        restaurantId: res!.restaurantId,
         id: "", // id sẽ được gán tự động trong Firestore
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim(),
@@ -158,72 +163,87 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
       builder: (context, constraints) {
         final isWide = constraints.maxWidth >= 900;
 
-        return StreamBuilder<List<Category>>(
-          stream: categoryService.getAllCategories(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator()),
-              );
+        return FutureBuilder(
+          future: _authService.getAccout(),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
             }
 
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: Text("Chưa có danh mục nào được thêm.")),
-              );
+            if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+              return const Center(child: Text('Không tìm thấy nhà hàng.'));
             }
 
-            final categories = snapshot.data!;
+            final restaurantId = asyncSnapshot.data!.restaurantId;
+            return StreamBuilder<List<Category>>(
 
-            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
-            if (isWide) {
-              return BaseTable(
-                columnWidths: const {
-                  0: FlexColumnWidth(2),
-                  1: FlexColumnWidth(6),
-                  2: FlexColumnWidth(4),
-                },
-                buildHeaderRow: const TableRow(
-                  children: [
-                    HeaderCellWidgetText(content: "Tên danh mục"),
-                    HeaderCellWidgetText(content: "Mô tả"),
-                    HeaderCellWidgetText(
-                      content: "Thao tác",
-                      align: TextAlign.center,
+              stream: categoryService.getAllCategories(restaurantId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+            
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: Text("Chưa có danh mục nào được thêm.")),
+                  );
+                }
+            
+                final categories = snapshot.data!;
+            
+                // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+                if (isWide) {
+                  return BaseTable(
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(6),
+                      2: FlexColumnWidth(4),
+                    },
+                    buildHeaderRow: const TableRow(
+                      children: [
+                        HeaderCellWidgetText(content: "Tên danh mục"),
+                        HeaderCellWidgetText(content: "Mô tả"),
+                        HeaderCellWidgetText(
+                          content: "Thao tác",
+                          align: TextAlign.center,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                buildDataRow: categories.map((cat) {
-                  return TableRow(
-                    children: [
-                      DataCellWidgetText(content: cat.name),
-                      DataCellWidgetText(content: cat.description),
-                      DataCellWidgetAction(
+                    buildDataRow: categories.map((cat) {
+                      return TableRow(
+                        children: [
+                          DataCellWidgetText(content: cat.name),
+                          DataCellWidgetText(content: cat.description),
+                          DataCellWidgetAction(
+                            editAction: () => _openAddCategoryModal(category: cat),
+                            deleteAction: () => _deleteCategory(category: cat),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  );
+                } else {
+                  return Column(
+                    children: categories.map((cat) {
+                      return ModelInfoSection(
+                        titles: {
+                          'name':'Tên:',
+                          'description': 'Mô tả:'
+                        }, 
+                        contents: cat.toMap(),
                         editAction: () => _openAddCategoryModal(category: cat),
                         deleteAction: () => _deleteCategory(category: cat),
-                      ),
-                    ],
+                      );
+                   }).toList(),
                   );
-                }).toList(),
-              );
-            } else {
-              return Column(
-                children: categories.map((cat) {
-                  return ModelInfoSection(
-                    titles: {
-                      'name':'Tên:',
-                      'description': 'Mô tả:'
-                    }, 
-                    contents: cat.toMap(),
-                    editAction: () => _openAddCategoryModal(category: cat),
-                    deleteAction: () => _deleteCategory(category: cat),
-                  );
-               }).toList(),
-              );
-            }
-          },
+                }
+              },
+            );
+          }
         );
       },
     );

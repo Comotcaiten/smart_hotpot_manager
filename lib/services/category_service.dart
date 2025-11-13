@@ -12,8 +12,8 @@ class CategoryService {
   }
 
   // READ (tùy chọn)
-  Stream<List<Category>> getAllCategories() {
-    return categorys.snapshots().map((snapshot) {
+  Stream<List<Category>> getAllCategories(String restaurantId) {
+    return categorys.where('restaurantId', isEqualTo: restaurantId).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         return Category.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();

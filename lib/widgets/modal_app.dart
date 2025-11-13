@@ -220,3 +220,12 @@ class FormFieldDataDropDown<T> extends FormFieldData {
     this.selectedValue,
   });
 }
+
+class InfoDropdown {
+  String id;
+  String name;
+  InfoDropdown({
+    required this.id,
+    required this.name,
+  });
+}

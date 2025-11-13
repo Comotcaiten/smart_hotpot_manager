@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
@@ -25,10 +25,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final _authServices = AuthService();
 
-  // // Regex pattern
-  // final _nameRegex = RegExp(r'^[a-zA-ZÀ-ỹ0-9\s]+$'); // không ký tự đặc biệt
-  // final _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-
   Future<void> _registerRestaurant() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -39,17 +35,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passController.text = _passController.text.trim();
 
       // Tạo đối tượng Restaurant model
-      final restaurant = Restaurant(
+      final restaurant = Account(
         id: '',
+        restaurantId: "",
         name: _nameController.text.trim(),
         gmail: _gmailController.text.trim(),
         pass: _passController.text.trim(),
         role: RoleAccount.admin,
-        createAt: DateTime.now(),
-        updateAt: DateTime.now(),
       );
 
-      await _authServices.register(restaurant);
+      await _authServices.register(restaurant, null);
 
       if (!mounted) return;
       ScaffoldMessenger.of(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
@@ -30,7 +30,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
     // Nếu user đang đăng nhập
     if (user != null) {
       // Lấy thông tin từ Firestore nếu cần
-      final doc = await _authServices.getRestaurant();
+      final doc = await _authServices.getAccout();
       
       if (!mounted) return;
 
@@ -40,9 +40,18 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
           Navigator.of(
             context,
           ).pushNamed(AppRoutes.DASHBOARD, arguments: selectRole);
+        } else if (doc.role == RoleAccount.staff) {
+          Navigator.pushNamed(context, AppRoutes.STAFF_HOME);
+          // _notification();
+
+        } else if (doc.role == RoleAccount.table) {
+          _notification();
         }
+        
       } else {
-        _authServices.logout();
+        // _authServices.logout();
+
+        // print("Logout");
 
         if (!mounted) return;
 
@@ -51,6 +60,12 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
     } else {
       Navigator.of(context).pushNamed(AppRoutes.LOGIN, arguments: selectRole);
     }
+  }
+
+  void _notification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Role này chưa được hỗ trợ')),
+    );
   }
 
   @override
