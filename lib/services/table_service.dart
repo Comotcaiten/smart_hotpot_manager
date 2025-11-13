@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:smart_hotpot_manager/models/table_model.dart';
+import 'package:flutter/widgets.dart';
+import 'package:smart_hotpot_manager/models/table.dart';
 
 class TableService {
   final CollectionReference tables =

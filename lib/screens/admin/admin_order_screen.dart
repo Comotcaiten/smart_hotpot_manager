@@ -207,7 +207,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             return AlertDialog(
               title: Text("Đổi trạng thái (Đơn: ${order.id})"),
               content: DropdownButtonFormField<StatusOrder>(
-                initialValue: newSelectedStatus,
+                value: newSelectedStatus,
                 decoration: const InputDecoration(
                   labelText: "Trạng thái mới",
                 ),

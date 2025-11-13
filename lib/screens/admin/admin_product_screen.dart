@@ -1,11 +1,9 @@
-// lib/screens/admin/admin_product_screen.dart
-
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/category.dart';
 import 'package:smart_hotpot_manager/models/product.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
 import 'package:smart_hotpot_manager/services/product_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
+import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 
@@ -19,12 +17,12 @@ class AdminProductScreen extends StatefulWidget {
 class _AdminProductScreenState extends State<AdminProductScreen> {
   // Service
   final ProductService _productService = ProductService();
-  final CategoryService _categoryService = CategoryService(); 
+  final CategoryService _categoryService = CategoryService();
 
   // Controllers
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
-  String? _selectedCategoryId; 
+  String? _selectedCategoryId;
 
   // Map để tra cứu tên Category
   Map<String, String> _categoryNameMap = {};
@@ -32,7 +30,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   @override
   void initState() {
     super.initState();
-    _loadCategoryNames(); 
+    _loadCategoryNames();
   }
 
   // Tải danh sách category 1 lần để tra cứu
@@ -48,10 +46,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Vui lòng điền đầy đủ thông tin (Tên, Giá, Danh mục)"),
-        backgroundColor: Colors.red,
-      ));
+          print("${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Vui lòng điền đầy đủ thông tin (Tên, Giá, Danh mục)"),
+          backgroundColor: Colors.red,
+        ),
+      );
+
+      Navigator.pop(context);
       return;
     }
 
@@ -60,13 +63,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (product == null) {
       // Thêm mới
       final newProduct = Product(
-        restaurantId: "R001", 
-        id: "", 
+        restaurantId: "R001",
+        id: "",
         name: _nameController.text.trim(),
         price: int.tryParse(_priceController.text.trim()) ?? 0,
         categoryId: _selectedCategoryId!,
         delete: false,
-        imageUrl: "", 
+        imageUrl: "",
         createAt: now,
         updateAt: now,
       );
@@ -82,9 +85,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           price: int.tryParse(_priceController.text.trim()) ?? 0,
           categoryId: _selectedCategoryId!,
           delete: product.delete,
-          imageUrl: product.imageUrl, 
-          createAt: product.createAt, 
-          updateAt: now, 
+          imageUrl: product.imageUrl,
+          createAt: product.createAt,
+          updateAt: now,
         ),
       );
     }
@@ -95,17 +98,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _priceController.clear();
     _selectedCategoryId = null;
 
-    String notification =
-        product == null ? "Thêm sản phẩm thành công!" : "Chỉnh sửa thành công";
+    String notification = product == null
+        ? "Thêm sản phẩm thành công!"
+        : "Chỉnh sửa thành công";
 
     Navigator.pop(context); // đóng modal
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.green,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.green),
+    );
   }
 
   Future<void> _deleteProduct({Product? product}) async {
@@ -120,12 +121,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.red,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -190,9 +188,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             child: Center(child: CircularProgressIndicator()),
           );
         }
-        
+
         if (snapshot.hasError) {
-           return Padding(
+          return Padding(
             padding: const EdgeInsets.all(16),
             child: Center(child: Text("Lỗi tải sản phẩm: ${snapshot.error}")),
           );
@@ -209,7 +207,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         final products = snapshot.data!;
 
         return BaseTable(
-          columnWidths: const { 
+          columnWidths: const {
             0: FlexColumnWidth(3), // Tên
             1: FlexColumnWidth(2), // Giá
             2: FlexColumnWidth(2), // Danh mục
@@ -217,34 +215,41 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             4: FlexColumnWidth(1.5), // Thao tác
           },
           buildHeaderRow: const TableRow(
-            children: [ 
+            children: [
               HeaderCellWidgetText(content: "Tên sản phẩm"),
               HeaderCellWidgetText(content: "Giá"),
               HeaderCellWidgetText(content: "Danh mục"),
-              HeaderCellWidgetText(content: "Trạng thái", align: TextAlign.left),
+              HeaderCellWidgetText(
+                content: "Trạng thái",
+                align: TextAlign.left,
+              ),
               HeaderCellWidgetText(
                 content: "Thao tác",
                 align: TextAlign.center,
               ),
             ],
           ),
-          buildDataRow: products.map((prod) { 
+          buildDataRow: products.map((prod) {
             // Lấy tên danh mục từ Map đã tải
-            final categoryName = _categoryNameMap[prod.categoryId] ?? "Không rõ";
+            final categoryName =
+                _categoryNameMap[prod.categoryId] ?? "Không rõ";
 
             return TableRow(
               children: [
                 DataCellWidgetText(content: prod.name),
-                DataCellWidgetText(content: "${prod.price} VNĐ"), 
-                DataCellWidgetText(content: categoryName), 
+                DataCellWidgetText(content: "${prod.price} VNĐ"),
+                DataCellWidgetText(content: categoryName),
                 DataCellWidgetBadge(
-                    option_1: "Hiển thị", option_2: "Ẩn", inStock: !prod.delete),
+                  option_1: "Hiển thị",
+                  option_2: "Ẩn",
+                  inStock: !prod.delete,
+                ),
                 DataCellWidgetAction(
                   editAction: () async {
-                    _openAddProductModal(product: prod); 
+                    _openAddProductModal(product: prod);
                   },
                   deleteAction: () async {
-                    _deleteProduct(product: prod); 
+                    _deleteProduct(product: prod);
                   },
                 ),
               ],
@@ -260,108 +265,52 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = product?.name ?? '';
     _priceController.text = product?.price.toString() ?? '';
-    _selectedCategoryId = product?.categoryId; 
-
-    final formKey = GlobalKey<FormState>();
+    _selectedCategoryId = product?.categoryId;
 
     showDialog(
       context: context,
-      builder: (context) {
-        // Dùng StatefulBuilder để Dropdown có thể cập nhật trạng thái riêng
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return AlertDialog(
-              title: Text(product == null ? "Thêm sản phẩm" : "Chỉnh sửa sản phẩm"),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 1. Tên sản phẩm
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: "Tên sản phẩm",
-                          hintText: "VD: Lẩu Thái",
-                        ),
-                        validator: (value) =>
-                            value!.isEmpty ? "Không được để trống" : null,
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // 2. Giá tiền
-                      TextFormField(
-                        controller: _priceController,
-                        decoration: const InputDecoration(
-                          labelText: "Giá tiền",
-                          hintText: "VD: 50000",
-                        ),
-                        keyboardType: TextInputType.number,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "Không được để trống";
-                          }
-                          if (int.tryParse(value) == null) {
-                            return "Phải là một con số";
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // 3. Dropdown Danh mục
-                      StreamBuilder<List<Category>>(
-                        stream: _categoryService.getAllCategories(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          final categories = snapshot.data!;
-                          return DropdownButtonFormField<String>(
-                            value: _selectedCategoryId,
-                            hint: const Text("Chọn danh mục"),
-                            decoration: const InputDecoration(
-                              labelText: "Danh mục",
-                            ),
-                            items: categories.map((Category cat) {
-                              return DropdownMenuItem<String>(
-                                value: cat.id,
-                                child: Text(cat.name),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                              setModalState(() {
-                                _selectedCategoryId = newValue;
-                              });
-                            },
-                            validator: (value) =>
-                                value == null ? "Vui lòng chọn danh mục" : null,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Hủy"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (formKey.currentState!.validate()) {
-                      _saveProduct(product: product);
-                    }
-                  },
-                  child: const Text("Lưu"),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => ModalForm(
+        title: product == null ? "Thêm sản phẩm" : "Sủa sản phẩm",
+        fields: [
+          FormFieldDataText(
+            label: "Tên sản phẩm",
+            hintText: "VD: Lẩu Thái",
+            controller: _nameController,
+            validator: (value) => value!.isEmpty ? "Không được để trống" : null,
+          ),
+          FormFieldDataText(
+            label: "Giá tiền",
+            hintText: "VD: 50000",
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Không được để trống";
+              }
+              if (int.tryParse(value) == null) {
+                return "Phải là một con số";
+              }
+              if (int.parse(value) < 0) {
+                return "Phải lớn hơn hoặc bằng 0";
+              }
+              return null;
+            },
+          ),
+          FormFieldDataDropDown(
+            label: "Danh mục",
+            hintText: "Chọn danh mục",
+            stream: _categoryService.getAllCategories(),
+            selectedValue: _selectedCategoryId,
+            onChanged: (value) => {
+              _selectedCategoryId = value.toString(),
+            },
+            validator: (value) => value == null ? "Vui lòng chọn danh mục" : null,
+          ),
+        ],
+        onSubmit: () async {
+          _saveProduct(product: product);
+        },
+      ),
     );
   }
 }

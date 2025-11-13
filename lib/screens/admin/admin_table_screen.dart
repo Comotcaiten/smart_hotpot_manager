@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 // Sửa imports
-import 'package:smart_hotpot_manager/models/table_model.dart';
+import 'package:smart_hotpot_manager/models/table.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
 // Giữ lại các widget UI
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';

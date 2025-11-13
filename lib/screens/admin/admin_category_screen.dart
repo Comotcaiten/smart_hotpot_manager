@@ -135,12 +135,12 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
       builder: (context) => ModalForm(
         title: category == null ? "Thêm danh mục" : "Chỉnh sửa danh mục",
         fields: [
-          FormFieldData(
+          FormFieldDataText(
             label: "Tên danh mục",
             hintText: "VD: Nước lẩu",
             controller: _nameController,
           ),
-          FormFieldData(
+          FormFieldDataText(
             label: "Mô tả",
             hintText: "VD: Các loại nước lẩu đặc biệt",
             controller: _descriptionController,
@@ -230,3 +230,4 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     );
   }
 }
+

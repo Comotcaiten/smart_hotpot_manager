@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 // Import các model và service THẬT
 import 'package:smart_hotpot_manager/models/order.dart';
-import 'package:smart_hotpot_manager/models/table_model.dart';
+import 'package:smart_hotpot_manager/models/table.dart';
 import 'package:smart_hotpot_manager/services/order_service.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
 // Import các widget UI
