@@ -1,5 +1,3 @@
-// import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smart_hotpot_manager/models/restaurant.dart';
 
 class Staff {
@@ -34,8 +32,8 @@ class Staff {
         (e) => e.name == data['role'],
         orElse: () => RoleAccount.staff,
       ),
-      createAt: (data['create_at'] as Timestamp).toDate(),
-      updateAt: (data['update_at'] as Timestamp).toDate(),
+      createAt: (data['create_at'] as DateTime),
+      updateAt: (data['update_at'] as DateTime),
     );
   }
 

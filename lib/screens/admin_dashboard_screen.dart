@@ -5,8 +5,6 @@ import 'package:smart_hotpot_manager/screens/admin/admin_product_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_table_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_order_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_overview_screen.dart';
-import 'package:smart_hotpot_manager/screens/admin/admin_account_screen.dart';
-
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
 enum AdminView { overview, categories, menu, table, account, order }
@@ -32,7 +30,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case AdminView.table:
         return const AdminTableScreen();
       case AdminView.account:
-        return const AdminAccountScreen();
+        return const Center(child: Text("Quản lý tài khoản"));
       case AdminView.order:
         return const AdminOrderScreen();
     }

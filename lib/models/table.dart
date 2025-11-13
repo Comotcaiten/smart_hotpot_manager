@@ -1,7 +1,13 @@
 // lib/models/table_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
+// Hàm helper để chuyển đổi Timestamp từ Firestore một cách an toàn
+DateTime _timestampToDateTime(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  }
+  return DateTime.now(); // Trả về an toàn nếu dữ liệu null
+}
 
 StatusTable _stringToStatus(String? statusName) {
   return StatusTable.values.firstWhere(
@@ -54,8 +60,8 @@ class TableModel {
       // <-- SỬA: Đọc status từ String
       status: _stringToStatus(data['status']),
       // <-- SỬA: Chuyển đổi Timestamp an toàn
-      createAt: (data['create_at'] as Timestamp).toDate(),
-      updateAt: (data['update_at'] as Timestamp).toDate(),
+      createAt: _timestampToDateTime(data['create_at']),
+      updateAt: _timestampToDateTime(data['update_at']),
     );
   }
 

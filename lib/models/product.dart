@@ -1,6 +1,18 @@
 // lib/models/product.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Hàm helper để chuyển đổi Timestamp từ Firestore một cách an toàn (Không đổi là bị lỗi không nhận dạng được DateTime)
+DateTime _timestampToDateTime(dynamic timestamp) {
+  if (timestamp is Timestamp) {
+    return timestamp.toDate();
+  } else if (timestamp is Map) {
+    // Đôi khi nó có thể là một Map, tùy thuộc vào cách dữ liệu được ghi
+    return Timestamp(timestamp['_seconds'], timestamp['_nanoseconds']).toDate();
+  }
+  // Mặc định trả về thời gian hiện tại nếu không nhận dạng được
+  return DateTime.now();
+}
+
 class Product {
   String restaurantId;
   String id;
@@ -33,8 +45,8 @@ class Product {
       categoryId: data['category_id'] ?? '',
       delete: data['delete'] ?? false,
       imageUrl: data['image_url'] ?? '',
-      createAt: (data['create_at'] as Timestamp).toDate(), 
-      updateAt: (data['update_at'] as Timestamp).toDate(),
+      createAt: _timestampToDateTime(data['create_at']), 
+      updateAt: _timestampToDateTime(data['update_at']),
     );
   }
 
