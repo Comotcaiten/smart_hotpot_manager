@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _gmailController = TextEditingController();
   final _passController = TextEditingController();
+  final _restaurantIdController = TextEditingController();
   final _roleIdController = TextEditingController();
 
   bool _isLoading = false;
@@ -116,11 +117,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
           if (role == RoleAccount.staff || role == RoleAccount.table) ...[
             TextField(
+              controller: _restaurantIdController,
+              decoration: InputDecoration(
+                labelText: "Mã quán",
+                prefixIcon: const Icon(Icons.qr_code),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          if (role == RoleAccount.table) ...[
+            TextField(
               controller: _roleIdController,
               decoration: InputDecoration(
-                labelText: role == RoleAccount.staff
-                    ? "Mã nhân viên"
-                    : "Mã bàn",
+                labelText: "Mã bàn",
                 prefixIcon: const Icon(Icons.qr_code),
                 border: const OutlineInputBorder(),
               ),

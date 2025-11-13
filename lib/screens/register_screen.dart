@@ -83,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TitleAppBar(
+      appBar: TitleAppBar(
         title: "Smart Hotpot Manager",
         subtitle: "Đăng ký tài khoản Restaurant",
       ),

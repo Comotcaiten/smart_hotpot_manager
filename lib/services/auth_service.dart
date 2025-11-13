@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/restaurant.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
-
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -55,11 +52,14 @@ class AuthService {
   User? get currentUser => _auth.currentUser;
 
   // Get Restaurant
-  Future<Restaurant?> getRestaurantById(String uid) async {
-    final docRef = _restaurants.doc(uid);
-    
-    final docSnap = await docRef.get();
+  Future<Restaurant?> getRestaurant() async {
+    final user = currentUser;
+    if (user == null) return null;
+
+    final docSnap = await _restaurants.doc(user.uid).get();
+    if (!docSnap.exists || docSnap.data() == null) return null;
 
     return Restaurant.fromMap(docSnap.data() as Map<String, dynamic>);
   }
+
 }

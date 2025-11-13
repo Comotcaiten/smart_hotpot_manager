@@ -14,7 +14,7 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeHomeState extends State<WelcomeScreen> {
-  final _authService = AuthService();
+  final _authServices = AuthService();
 
   // @override
   // void initState() {
@@ -25,12 +25,13 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
   // TODO: Kiểm tra xem người dùng có đang đăng nhập hay không
   Future<void> _handleLogin(RoleAccount selectRole) async {
     // Lấy user hiện tại
-    final user = _authService.currentUser;
+    final user = _authServices.currentUser;
 
     // Nếu user đang đăng nhập
     if (user != null) {
       // Lấy thông tin từ Firestore nếu cần
-      final doc = await _authService.getRestaurantById(user.uid);
+      final doc = await _authServices.getRestaurant();
+      
       if (!mounted) return;
 
       if (doc!.role == selectRole) {
@@ -41,7 +42,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
           ).pushNamed(AppRoutes.DASHBOARD, arguments: selectRole);
         }
       } else {
-        _authService.logout();
+        _authServices.logout();
 
         if (!mounted) return;
 

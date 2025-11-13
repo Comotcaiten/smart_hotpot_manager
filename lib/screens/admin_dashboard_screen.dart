@@ -35,7 +35,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const TitleAppBar(
+      appBar: TitleAppBar(
         title: "Smart Hotpot Manager",
         subtitle: "Admin Dashboard",
       ),
