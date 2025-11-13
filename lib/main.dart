@@ -6,7 +6,7 @@ import 'package:smart_hotpot_manager/screens/login_screen.dart';
 import 'package:smart_hotpot_manager/screens/register_screen.dart';
 import 'package:smart_hotpot_manager/screens/staff_home_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/utils/utils.dart';
 // import 'package:flutter/services.dart';
 
 void main() async {

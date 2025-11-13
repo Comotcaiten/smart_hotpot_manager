@@ -116,7 +116,7 @@ class _ModalFormState extends State<ModalForm> {
         TextFormField(
           controller: field.controller,
           keyboardType: field.keyboardType,
-          enabled: !_isSubmitting,
+          enabled: field.disable ? !field.disable : !_isSubmitting,
           decoration: InputDecoration(
             hintText: field.hintText,
             border: const OutlineInputBorder(),
@@ -183,7 +183,7 @@ class FormFieldDataText extends FormFieldData {
   final String hintText;
   final TextEditingController controller;
   final TextInputType keyboardType;
-  final bool isRequired;
+  final bool disable;
   final String? Function(String?)? validator;
 
   FormFieldDataText({
@@ -191,7 +191,7 @@ class FormFieldDataText extends FormFieldData {
     required this.hintText,
     required this.controller,
     this.keyboardType = TextInputType.text,
-    this.isRequired = true,
+    this.disable = false,
     this.validator,
   });
 }

@@ -7,8 +7,6 @@ class Staff {
   String gmail;
   String pass;
   RoleAccount role;
-  DateTime createAt;
-  DateTime updateAt;
 
   Staff({
     required this.restaurantId,
@@ -17,8 +15,6 @@ class Staff {
     required this.gmail,
     required this.pass,
     this.role = RoleAccount.staff,
-    required this.createAt,
-    required this.updateAt,
   });
 
   factory Staff.fromMap(Map<String, dynamic> data) {
@@ -32,8 +28,6 @@ class Staff {
         (e) => e.name == data['role'],
         orElse: () => RoleAccount.staff,
       ),
-      createAt: (data['create_at'] as DateTime),
-      updateAt: (data['update_at'] as DateTime),
     );
   }
 
@@ -45,8 +39,6 @@ class Staff {
       'gmail': gmail,
       'pass': pass,
       'role': role.name,
-      'create_at': createAt,
-      'update_at': updateAt,
     };
   }
 }

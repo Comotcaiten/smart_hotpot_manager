@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/restaurant.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_category_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_product_screen.dart';
+import 'package:smart_hotpot_manager/screens/admin/admin_staff_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_table_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_order_screen.dart';
 import 'package:smart_hotpot_manager/screens/admin/admin_overview_screen.dart';
@@ -30,7 +31,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case AdminView.table:
         return const AdminTableScreen();
       case AdminView.account:
-        return const Center(child: Text("Quản lý tài khoản"));
+        return const AdminStaffScreen();
       case AdminView.order:
         return const AdminOrderScreen();
     }
@@ -63,7 +64,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               AdminView.menu: SegmentText(content: "Menu"),
               AdminView.table: SegmentText(content: "Table"),
               AdminView.order: SegmentText(content: "Order"),
-              AdminView.account: SegmentText(content: "Account"),
+              AdminView.account: SegmentText(content: "Staff"),
             },
           ),
 

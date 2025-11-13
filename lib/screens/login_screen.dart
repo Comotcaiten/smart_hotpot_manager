@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/models/staff.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
 import 'package:smart_hotpot_manager/widgets/field_custom.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/utils/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,6 +26,50 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   final _authServices = AuthService();
+
+  Future<void> _loginStaff() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    try {
+      final Staff? staff = await _authServices.loginStaff(
+        _gmailController.text.trim(),
+        _passController.text.trim(),
+      );
+
+      if (staff?.role != RoleAccount.staff) {
+        throw Exception('Tài khoản này không có quyền đăng nhập Staff.');
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Đăng nhập thành công!')));
+
+      Navigator.pushNamed(context, AppRoutes.DASHBOARD);
+
+    } on FirebaseAuthException catch (e) {
+      String message = 'Đăng nhập thất bại';
+      if (e.code == 'user-not-found') {
+        message = 'Không tìm thấy tài khoản với email này';
+      } else if (e.code == 'wrong-password') {
+        message = 'Sai mật khẩu, vui lòng thử lại';
+      } else if (e.code == 'invalid-email') {
+        message = 'Email không hợp lệ';
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+      
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => _isLoading = false); 
+    }
+  }
 
   Future<void> _loginAdmin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -182,7 +227,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () async {
                         if (role == RoleAccount.admin) {
                           await _loginAdmin();
-                        } else {
+                        } 
+                        else if (role == RoleAccount.staff) {
+                          await _loginStaff();
+                        }
+                        else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Role này chưa hỗ trợ đăng nhập'),

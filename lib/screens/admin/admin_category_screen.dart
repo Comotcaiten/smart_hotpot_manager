@@ -144,7 +144,6 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
             label: "Mô tả",
             hintText: "VD: Các loại nước lẩu đặc biệt",
             controller: _descriptionController,
-            isRequired: false,
           ),
         ],
         onSubmit: () async {
