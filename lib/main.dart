@@ -6,6 +6,7 @@ import 'package:smart_hotpot_manager/screens/login_screen.dart';
 import 'package:smart_hotpot_manager/screens/register_screen.dart';
 import 'package:smart_hotpot_manager/screens/staff_home_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
+import 'package:smart_hotpot_manager/screens/table/table_menu_screen.dart';
 import 'package:smart_hotpot_manager/utils/app_routes.dart';
 // import 'package:flutter/services.dart';
 
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.REGISTER: (BuildContext context) => RegisterScreen(),
         AppRoutes.DASHBOARD: (BuildContext context) => AdminDashboardScreen(),
         AppRoutes.STAFF_HOME: (BuildContext context) => StaffHomeScreen(),
+        AppRoutes.TABLE_MENU: (BuildContext context) => const CustomerMenuScreen(),
       },
     );
   }

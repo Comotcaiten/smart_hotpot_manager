@@ -4,4 +4,5 @@ class AppRoutes {
   static const String REGISTER = '/register';
   static const String DASHBOARD = '/dashboard';
   static const String STAFF_HOME = '/staff_home';
+  static const String TABLE_MENU = '/table_menu';
 }

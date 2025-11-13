@@ -1,13 +1,6 @@
 // lib/models/order.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-DateTime _timestampToDateTime(dynamic timestamp) {
-  if (timestamp is Timestamp) {
-    return timestamp.toDate();
-  }
-  return DateTime.now(); 
-}
-
 StatusOrder _stringToStatus(String? statusName) {
   return StatusOrder.values.firstWhere(
     (e) => e.name == statusName,
@@ -60,10 +53,10 @@ class Order {
       id: data['id'] ?? '',
       restaurantId: data['restaurant_id'] ?? '',
       tableId: data['table_id'] ?? '',
-      status: _stringToStatus(data['status']), // <-- SỬA
+      status: _stringToStatus(data['status']), 
       totalAmount: (data['total_amount'] ?? 0).toDouble(),
-      createAt: _timestampToDateTime(data['create_at']), // <-- SỬA
-      updateAt: _timestampToDateTime(data['update_at']), // <-- SỬA
+      createAt: (data['create_at'] as Timestamp).toDate(), 
+      updateAt: (data['update_at'] as Timestamp).toDate(), 
     );
   }
 
