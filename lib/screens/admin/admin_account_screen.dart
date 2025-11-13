@@ -3,12 +3,13 @@
 import 'package:flutter/material.dart';
 // Sửa imports
 import 'package:smart_hotpot_manager/models/staff.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart'; // Cần cho RoleAccount
+import 'package:smart_hotpot_manager/models/restaurant.dart';
 import 'package:smart_hotpot_manager/services/account_service.dart';
 // Giữ lại các widget UI
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
+// SỬA: Import ModalForm
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 
 class AdminAccountScreen extends StatefulWidget {
@@ -42,13 +43,12 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
     
     // Lấy RoleAccount từ tên (string) đã chọn
     final role = RoleAccount.values.firstWhere(
-      (e) => e.name == _selectedRoleName, // So sánh "table" == "table"
-      orElse: () => RoleAccount.staff, // Sẽ không chạy vào đây nữa
+      (e) => e.name == _selectedRoleName,
+      orElse: () => RoleAccount.staff, // Mặc định là staff
     );
 
     final now = DateTime.now();
     
-    // SỬA: Lưu context trước khi gọi await
     final nav = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -60,7 +60,7 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
         name: _nameController.text.trim(),
         gmail: _gmailController.text.trim(),
         pass: _passController.text.trim(), // TODO: Cần mã hóa mật khẩu
-        role: role, // <-- Dùng `role` đã được tìm đúng
+        role: role,
         createAt: now,
         updateAt: now,
       );
@@ -74,9 +74,9 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
           name: _nameController.text.trim(),
           gmail: _gmailController.text.trim(),
           pass: _passController.text.trim().isNotEmpty 
-                ? _passController.text.trim() 
-                : staff.pass, 
-          role: role, // <-- Dùng `role` đã được tìm đúng
+                ? _passController.text.trim() // Cập nhật pass mới (nếu có)
+                : staff.pass, // Giữ pass cũ (nếu trống)
+          role: role,
           createAt: staff.createAt, 
           updateAt: now, 
         ),
@@ -137,12 +137,12 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeaderIconLead(
-            title: "Quản lý Tài khoản", 
-            subtitle: "Thêm, sửa, xóa tài khoản nhân viên", 
+            title: "Quản lý Tài khoản", // Sửa
+            subtitle: "Thêm, sửa, xóa tài khoản nhân viên", // Sửa
             icon: AppIcon(
               size: 46,
-              icon: Icons.people_alt_rounded, 
-              colors: [Colors.teal, Colors.black], 
+              icon: Icons.people_alt_rounded, // Sửa
+              colors: [Colors.teal, Colors.black], // Sửa
             ),
           ),
           const SizedBox(height: 16),
@@ -150,7 +150,7 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm tài khoản"), 
+              label: const Text("Thêm tài khoản"), // Sửa
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
@@ -159,12 +159,11 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
                 ),
               ),
               onPressed: () {
-                _openAddAccountModal(); 
+                _openAddAccountModal(); // Sửa
               },
             ),
           ),
           const SizedBox(height: 16),
-          // SỬA: Thêm Expanded để fix lỗi layout
           _buildAccountTable()
         ],
       ),
@@ -172,9 +171,9 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
   }
 
   // Xây dựng bảng Tài khoản
-  Widget _buildAccountTable() { 
-    return StreamBuilder<List<Staff>>( 
-      stream: _accountService.getAllAccounts(), 
+  Widget _buildAccountTable() { // Sửa
+    return StreamBuilder<List<Staff>>( // Sửa
+      stream: _accountService.getAllAccounts(), // Sửa
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -193,21 +192,21 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có tài khoản nào.")), 
+            child: Center(child: Text("Chưa có tài khoản nào.")), // Sửa
           );
         }
 
-        final accounts = snapshot.data!; 
+        final accounts = snapshot.data!; // Sửa
 
         return BaseTable(
-          columnWidths: const { 
+          columnWidths: const { // Sửa (Tên, Gmail, Vai trò, Thao tác)
             0: FlexColumnWidth(2),
             1: FlexColumnWidth(3),
             2: FlexColumnWidth(1.5),
             3: FlexColumnWidth(1.5),
           },
           buildHeaderRow: const TableRow(
-            children: [ 
+            children: [ // Sửa
               HeaderCellWidgetText(content: "Tên"),
               HeaderCellWidgetText(content: "Gmail"),
               HeaderCellWidgetText(content: "Vai trò", align: TextAlign.left),
@@ -217,44 +216,23 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
               ),
             ],
           ),
-          buildDataRow: accounts.map((account) { 
-            // SỬA: Sửa lại logic cho DataCellWidgetBadge
-            String roleName;
-            bool inStock; // inStock = true (màu đen), false (màu đỏ)
-            
-            switch(account.role) {
-              case RoleAccount.admin:
-                roleName = "Admin";
-                inStock = true; // Màu đen
-                break;
-              case RoleAccount.staff:
-                roleName = "Staff";
-                inStock = false; // Màu đỏ
-                break;
-              case RoleAccount.table:
-                roleName = "Table";
-                inStock = false; // Màu đỏ
-                break;
-              default:
-                roleName = "None";
-                inStock = false;
-            }
-
+          buildDataRow: accounts.map((account) { // Sửa
             return TableRow(
               children: [
-                DataCellWidgetText(content: account.name), 
-                DataCellWidgetText(content: account.gmail), 
+                DataCellWidgetText(content: account.name), // Sửa
+                DataCellWidgetText(content: account.gmail), // Sửa
                 DataCellWidgetBadge(
-                  option_1: roleName, 
-                  option_2: roleName,
-                  inStock: inStock,
+                  option_1: "Admin", 
+                  option_2: "Staff",
+                  // Admin thì màu đen (inStock=true)
+                  inStock: account.role == RoleAccount.admin,
                 ),
                 DataCellWidgetAction(
                   editAction: () async {
-                    _openAddAccountModal(staff: account); 
+                    _openAddAccountModal(staff: account); // Sửa
                   },
                   deleteAction: () async {
-                    _deleteAccount(staff: account); 
+                    _deleteAccount(staff: account); // Sửa
                   },
                 ),
               ],
@@ -270,15 +248,16 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = staff?.name ?? '';
     _gmailController.text = staff?.gmail ?? '';
-    _passController.text = ''; 
+    _passController.text = ''; // Mật khẩu luôn trống khi sửa
     _selectedRoleName = staff?.role.name; 
 
+    // Tạo danh sách các lựa chọn vai trò
     final roleOptions = [
       _RoleDisplay(RoleAccount.admin, "Admin"),
       _RoleDisplay(RoleAccount.staff, "Staff"),
-      _RoleDisplay(RoleAccount.table, "Table"),
     ];
     
+    // Tạo 1 stream từ danh sách tĩnh
     final roleStream = Stream.value(roleOptions);
 
     showDialog(
@@ -311,27 +290,22 @@ class _AdminAccountScreenState extends State<AdminAccountScreen> {
               hintText: "******",
               controller: _passController,
               keyboardType: TextInputType.visiblePassword,
+              // Chỉ bắt buộc khi tạo mới
               validator: (value) => (staff == null && (value == null || value.isEmpty)) 
                 ? "Vui lòng nhập mật khẩu" 
                 : null,
             ),
             
             // 4. Vai trò (Dropdown)
-            // SỬA: Ép kiểu <dynamic> để khớp với `modal_app.dart`
-            FormFieldDataDropDown<dynamic>(
+            FormFieldDataDropDown(
               label: "Vai trò",
               hintText: "Chọn vai trò",
-              stream: roleStream as Stream<List<dynamic>>, // SỬA: ép kiểu stream
+              stream: roleStream, 
               selectedValue: _selectedRoleName, 
               onChanged: (value) {
-                // SỬA: Cập nhật `_selectedRoleName`
                 _selectedRoleName = value.toString();
               },
-              validator: (value) {
-                // SỬA: Cập nhật `_selectedRoleName` TRƯỚC KHI validate
-                _selectedRoleName = value?.toString();
-                return (value == null) ? "Vui lòng chọn vai trò" : null;
-              }
+              validator: (value) => (value == null) ? "Vui lòng chọn vai trò" : null,
             ),
           ],
           
