@@ -71,7 +71,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               AdminView.menu: SegmentText(content: "Menu"),
               AdminView.table: SegmentText(content: "Table"),
               AdminView.order: SegmentText(content: "Order"),
-              AdminView.account: SegmentText(content: "Staff"),
+              AdminView.account: SegmentText(content: "Account"),
             },
           ),
 

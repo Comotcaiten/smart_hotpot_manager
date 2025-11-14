@@ -195,7 +195,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                   // Logic cho màu Badge:
                   // Giả sử "Đã thanh toán" là `inStock: true` (màu đen)
                   // Các trạng thái còn lại là `inStock: false` (màu đỏ)
-                  bool isPaid = order.status == StatusOrder.complete;
+                  bool isPaid = order.status == StatusOrder.complete || order.status == StatusOrder.paid;
 
                   return TableRow(
                     children: [
@@ -233,14 +233,14 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               return Column(
                 children: orders.map((cat) {
                   final tableName = _tableNameMap[cat.tableId] ?? "N/A";
-                  bool isPaid = cat.status == StatusOrder.complete;
+                  bool isPaid = cat.status == StatusOrder.complete || cat.status == StatusOrder.paid;
                   final newMap = {
                     ...cat.toMap(),
                     'tableName': tableName,
                     'total_amount': currencyFormat.format(cat.totalAmount),
                     'status': isPaid ? "Đã phục vụ" : "Trong quá trình",
                     'time': cat.createAt
-                  };
+                  };  
                   return ModelInfoSection(
                     titles: {
                       'id': 'Mã đơn:',

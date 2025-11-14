@@ -7,9 +7,10 @@ import 'package:smart_hotpot_manager/models/table.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/order_service.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
+import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 // Import các widget UI
 // (Hãy chắc chắn rằng bạn đã tạo file summary_card.dart từ lượt trước)
-import 'package:smart_hotpot_manager/widgets/summary_card.dart'; 
+import 'package:smart_hotpot_manager/widgets/summary_card.dart';
 // import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 
@@ -40,7 +41,6 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
   // Hàm tải dữ liệu từ 2 service
   Future<Map<String, dynamic>> _loadData() async {
-
     final res = await _authService.getAccout();
     // Dùng .first để lấy dữ liệu 1 lần từ Stream
     final allOrders = await _orderService.getAllOrders(res!.restaurantId).first;
@@ -48,13 +48,13 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
     // Tải map tên bàn để tra cứu
     _tableNameMap = {for (var table in allTables) table.id: table.name};
-    
+
     return {
       'orders': allOrders, // Đây là List<Order>
       'tables': allTables, // Đây là List<TableModel>
     };
   }
-  
+
   final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
   final timeFormat = DateFormat('HH:mm');
 
@@ -75,7 +75,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
         // Lấy dữ liệu đã tải
         // Code này sẽ đọc List<Order>, không phải List<RecentOrder>
-        final allOrders = snapshot.data!['orders'] as List<Order>; 
+        final allOrders = snapshot.data!['orders'] as List<Order>;
         final allTables = snapshot.data!['tables'] as List<TableModel>;
 
         // Xây dựng giao diện
@@ -95,9 +95,8 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
   // Widget cho 4 thẻ thống kê (Tính toán dữ liệu thật)
   Widget _buildSummaryRow(List<Order> allOrders, List<TableModel> allTables) {
-    
     // --- TÍNH TOÁN DỮ LIỆU BẠN YÊU CẦU ---
-    
+
     // 1. Tổng doanh thu từ những order đã thanh toán
     double totalRevenue = allOrders
         .where((order) => order.status == StatusOrder.paid)
@@ -105,9 +104,11 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
     // 2. Đơn hàng đang xử lý (Chưa xử lý = pending hoặc preparing)
     int processingOrders = allOrders
-        .where((order) => 
-            order.status == StatusOrder.pending || 
-            order.status == StatusOrder.preparing)
+        .where(
+          (order) =>
+              order.status == StatusOrder.pending ||
+              order.status == StatusOrder.preparing,
+        )
         .length;
 
     // 3. Bàn đang sử dụng
@@ -117,48 +118,101 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
     int totalTables = allTables.length;
 
     // 4. Tăng trưởng (Giữ nguyên)
-    String growth = "+15%"; 
-    
+    String growth = "+15%";
+
     // ------------------------------------
 
-    return Row(
-      children: [
-        Expanded(
-          child: SummaryCard(
-            title: "Tổng doanh thu", // Đã thanh toán
-            value: currencyFormat.format(totalRevenue),
-            icon: Icons.attach_money,
-            iconColor: Colors.green,
-          ),
+    List<Widget> herosRows = [
+      Expanded(
+        child: SummaryCard(
+          title: "Tổng doanh thu", // Đã thanh toán
+          value: currencyFormat
+              .format(totalRevenue)
+              .replaceAll(RegExp(r'VNĐ'), ""),
+          icon: Icons.attach_money,
+          iconColor: Colors.green,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: SummaryCard(
-            title: "Đơn hàng đang xử lý",
-            value: processingOrders.toString(),
-            icon: Icons.shopping_cart_outlined,
-            iconColor: Colors.blue,
-          ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: SummaryCard(
+          title: "Đơn hàng đang xử lý",
+          value: processingOrders.toString(),
+          icon: Icons.shopping_cart_outlined,
+          iconColor: Colors.blue,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: SummaryCard(
-            title: "Bàn đang sử dụng",
-            value: "$tablesInUse/$totalTables",
-            icon: Icons.people_alt_outlined,
-            iconColor: Colors.orange,
-          ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: SummaryCard(
+          title: "Bàn đang sử dụng",
+          value: "$tablesInUse/$totalTables",
+          icon: Icons.people_alt_outlined,
+          iconColor: Colors.orange,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: SummaryCard(
-            title: "Tăng trưởng",
-            value: growth,
-            icon: Icons.trending_up,
-            iconColor: Colors.purple,
-          ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: SummaryCard(
+          title: "Tăng trưởng",
+          value: growth,
+          icon: Icons.trending_up,
+          iconColor: Colors.purple,
         ),
-      ],
+      ),
+    ];
+
+    List<Widget> herosColumns = [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SummaryCard(
+          title: "Tổng doanh thu", // Đã thanh toán
+          value: currencyFormat
+              .format(totalRevenue)
+              .replaceAll(RegExp(r'VNĐ'), ""),
+          icon: Icons.attach_money,
+          iconColor: Colors.green,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SummaryCard(
+          title: "Đơn hàng đang xử lý",
+          value: processingOrders.toString(),
+          icon: Icons.shopping_cart_outlined,
+          iconColor: Colors.blue,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SummaryCard(
+          title: "Bàn đang sử dụng",
+          value: "$tablesInUse/$totalTables",
+          icon: Icons.people_alt_outlined,
+          iconColor: Colors.orange,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SummaryCard(
+          title: "Tăng trưởng",
+          value: growth,
+          icon: Icons.trending_up,
+          iconColor: Colors.purple,
+        ),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 1250;
+
+        if (isWide) {
+          return Row(children: herosRows);
+        } else {
+          return Column(children: herosColumns);
+        }
+      },
     );
   }
 
@@ -166,75 +220,110 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
   Widget _buildRecentOrdersTable(List<Order> orders) {
     // Chỉ lấy 3 đơn hàng mới nhất
     final recentOrders = orders.take(3).toList();
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Đơn hàng gần đây",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const Text(
-            "Theo dõi đơn hàng trong thời gian thực",
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-          ),
-          const SizedBox(height: 16),
 
-          // Bảng (Tái sử dụng BaseTable của bạn)
-          BaseTable(
-            columnWidths: const {
-              0: FlexColumnWidth(1.5), // Mã đơn
-              1: FlexColumnWidth(1.5), // Bàn
-              2: FlexColumnWidth(2),   // Trạng thái
-              3: FlexColumnWidth(1.5), // Thời gian
-              4: FlexColumnWidth(2),   // Tổng tiền
-            },
-            buildHeaderRow: const TableRow(
-              children: [
-                HeaderCellWidgetText(content: "Mã đơn"),
-                HeaderCellWidgetText(content: "Bàn"),
-                HeaderCellWidgetText(content: "Trạng thái"),
-                HeaderCellWidgetText(content: "Thời gian"),
-                HeaderCellWidgetText(content: "Tổng tiền"),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Đơn hàng gần đây",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                "Theo dõi đơn hàng trong thời gian thực",
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+
+              if (isWide) ...[
+                // Bảng (Tái sử dụng BaseTable của bạn)
+                BaseTable(
+                  columnWidths: const {
+                    0: FlexColumnWidth(1.5), // Mã đơn
+                    1: FlexColumnWidth(1.5), // Bàn
+                    2: FlexColumnWidth(2), // Trạng thái
+                    3: FlexColumnWidth(1.5), // Thời gian
+                    4: FlexColumnWidth(2), // Tổng tiền
+                  },
+                  buildHeaderRow: const TableRow(
+                    children: [
+                      HeaderCellWidgetText(content: "Mã đơn"),
+                      HeaderCellWidgetText(content: "Bàn"),
+                      HeaderCellWidgetText(content: "Trạng thái"),
+                      HeaderCellWidgetText(content: "Thời gian"),
+                      HeaderCellWidgetText(content: "Tổng tiền"),
+                    ],
+                  ),
+                  buildDataRow: recentOrders.map((order) {
+                    // Lấy tên bàn từ Map
+                    final tableName = _tableNameMap[order.tableId] ?? "N/A";
+
+                    // Logic cho Badge
+                    bool isInStock =
+                        order.status == StatusOrder.complete ||
+                        order.status == StatusOrder.served ||
+                        order.status == StatusOrder.paid;
+                    String option1 = order.statusString;
+                    String option2 = order.statusString;
+
+                    return TableRow(
+                      children: [
+                        DataCellWidgetText(content: order.id),
+                        DataCellWidgetText(content: tableName),
+                        DataCellWidgetBadge(
+                          option_1: option1,
+                          option_2: option2,
+                          inStock: isInStock,
+                        ),
+                        DataCellWidgetText(
+                          content: timeFormat.format(order.createAt),
+                        ),
+                        DataCellWidgetText(
+                          content: currencyFormat.format(order.totalAmount),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ] else ...[
+                Column(
+                  children: recentOrders.map((cat) {
+                  final tableName = _tableNameMap[cat.tableId] ?? "N/A";
+                  bool isPaid = cat.status == StatusOrder.complete || cat.status == StatusOrder.paid;
+                  final newMap = {
+                    ...cat.toMap(),
+                    'tableName': tableName,
+                    'total_amount': currencyFormat.format(cat.totalAmount),
+                    'status': isPaid ? "Đã phục vụ" : "Trong quá trình",
+                    'time': cat.createAt
+                  };  
+                    return ModelInfoSectionOff(
+                    titles: {
+                      'id': 'Mã đơn:',
+                      'tableName': 'Bàn:',
+                      'total_amount': 'Giá:',
+                      'status': 'Trạng thái:',
+                      'time': 'Thời gian',
+                    },
+                      contents: newMap,
+                    );
+                  }).toList(),
+                ),
               ],
-            ),
-            buildDataRow: recentOrders.map((order) {
-              // Lấy tên bàn từ Map
-              final tableName = _tableNameMap[order.tableId] ?? "N/A";
-
-              // Logic cho Badge
-              bool isInStock = order.status == StatusOrder.complete || 
-                                 order.status == StatusOrder.served ||
-                                 order.status == StatusOrder.paid;
-              String option1 = order.statusString; 
-              String option2 = order.statusString; 
-
-              return TableRow(
-                children: [
-                  DataCellWidgetText(content: order.id),
-                  DataCellWidgetText(content: tableName),
-                  DataCellWidgetBadge(
-                    option_1: option1,
-                    option_2: option2,
-                    inStock: isInStock,
-                  ),
-                  DataCellWidgetText(content: timeFormat.format(order.createAt)),
-                  DataCellWidgetText(
-                    content: currencyFormat.format(order.totalAmount),
-                  ),
-                ],
-              );
-            }).toList(),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
