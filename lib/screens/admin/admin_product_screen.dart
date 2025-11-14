@@ -24,6 +24,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   // Controllers
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _imageLinkController = TextEditingController();
   String? _selectedCategoryId;
 
   // Map để tra cứu tên Category
@@ -51,10 +52,11 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     final res = await _authService.getAccout();
 
     if (_nameController.text.isEmpty ||
-        _priceController.text.isEmpty ||
+        _priceController.text.isEmpty || 
+        _imageLinkController.text.isEmpty ||
         _selectedCategoryId == null) {
       print(
-        "${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}",
+        "${_nameController.text} , ${_priceController.text} , ${_imageLinkController.text} , ${_selectedCategoryId.toString()}",
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -78,7 +80,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         price: int.tryParse(_priceController.text.trim()) ?? 0,
         categoryId: _selectedCategoryId!,
         delete: false,
-        imageUrl: "",
+        imageUrl: _imageLinkController.text.trim(),
         createAt: now,
         updateAt: now,
       );
@@ -94,7 +96,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           price: int.tryParse(_priceController.text.trim()) ?? 0,
           categoryId: _selectedCategoryId!,
           delete: product.delete,
-          imageUrl: product.imageUrl,
+          imageUrl: _imageLinkController.text.trim(),
           createAt: product.createAt,
           updateAt: now,
         ),
@@ -105,6 +107,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     _nameController.clear();
     _priceController.clear();
+    _imageLinkController.clear();
     _selectedCategoryId = null;
 
     String notification = product == null
@@ -293,6 +296,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = product?.name ?? '';
     _priceController.text = product?.price.toString() ?? '';
+    _imageLinkController.text = product?.imageUrl ?? '';
     _selectedCategoryId = product?.categoryId;
 
     showDialog(
@@ -304,6 +308,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             label: "Tên sản phẩm",
             hintText: "VD: Lẩu Thái",
             controller: _nameController,
+            validator: (value) => value!.isEmpty ? "Không được để trống" : null,
+          ),
+
+          FormFieldDataText(
+            label: "Link hình ảnh",
+            hintText: "VD: https://example.com/image.jpg",
+            controller: _imageLinkController,
             validator: (value) => value!.isEmpty ? "Không được để trống" : null,
           ),
           FormFieldDataText(
