@@ -308,8 +308,8 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
 
             // 2. Mật khẩu
             FormFieldDataText(
-              label: "Mật khẩu",
-              hintText: "VD: 123456",
+              label: "Số người",
+              hintText: "VD: 4",
               controller: _seatsController,
               keyboardType: TextInputType.number,
               validator: (value) {

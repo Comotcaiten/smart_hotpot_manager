@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
-import 'package:smart_hotpot_manager/models/product.dart';
+// import 'package:smart_hotpot_manager/models/product.dart';
 
 class CategoryService {
   final CollectionReference categorys =

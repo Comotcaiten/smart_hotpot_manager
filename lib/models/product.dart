@@ -17,7 +17,7 @@ class Product {
   String restaurantId;
   String id;
   String name;
-  int price;
+  double price;
   String categoryId;
   bool delete;
   String imageUrl;
@@ -41,7 +41,7 @@ class Product {
       restaurantId: data['restaurantId'] ?? '',
       id: data['id'] ?? '',
       name: data['name'] ?? '',
-      price: (data['price'] ?? 0) as int,
+      price: (data['price'] ?? 0) as double,
       categoryId: data['category_id'] ?? '',
       delete: data['delete'] ?? false,
       imageUrl: data['image_url'] ?? '',
