@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/responsitories/staff_order_repository.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/widgets/staff_order_card.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
@@ -14,6 +15,9 @@ class _StaffHomeScreenState extends State<StaffHomeScreen> {
   final StaffOrderRepository _repository = StaffOrderRepository();
   late Future<List<StaffOrder>> _ordersFuture;
 
+  // Services
+  final AuthService _authService = AuthService();
+
   @override
   void initState() {
     super.initState();
@@ -27,73 +31,89 @@ class _StaffHomeScreenState extends State<StaffHomeScreen> {
         title: "Smart Hotpot Manager",
         subtitle: "Staff Dashboard",
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 1090;
+      body: FutureBuilder(
+        future: _authService.getAccout(),
+        builder: (context, asyncSnapshot) {
+    
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                _buildStatusLegend(),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: FutureBuilder<List<StaffOrder>>(
-                    future: _ordersFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Không tìm thấy nhà hàng.'));
+        }
 
-                      if (snapshot.hasError) {
-                        return Center(
-                            child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
-                      }
+        final restaurantId = asyncSnapshot.data!;
 
-                      final orders = snapshot.data ?? [];
-                      if (orders.isEmpty) {
-                        return const Center(child: Text("Không có đơn hàng nào."));
-                      }
-
-                      // Phân loại đơn
-                      final pending = orders
-                          .where((o) => o.status == OrderStatus.pending)
-                          .toList();
-                      final preparing = orders
-                          .where((o) => o.status == OrderStatus.preparing)
-                          .toList();
-                      final completed = orders
-                          .where((o) => o.status == OrderStatus.completed)
-                          .toList();
-
-                      final columns = [
-                        _buildOrderColumn("Chờ xử lý", pending),
-                        _buildOrderColumn("Đang chuẩn bị", preparing),
-                        _buildOrderColumn("Đã hoàn thành", completed),
-                      ];
-
-                      return SingleChildScrollView(
-                        child: Center(
-                          child: isWide
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: columns,
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: columns,
-                                ),
-                        ),
-                      );
-                    },
-                  ),
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 1090;
+          
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    _buildStatusLegend(),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: FutureBuilder<List<StaffOrder>>(
+                        future: _ordersFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+          
+                          if (snapshot.hasError) {
+                            return Center(
+                                child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
+                          }
+          
+                          final orders = snapshot.data ?? [];
+                          if (orders.isEmpty) {
+                            return const Center(child: Text("Không có đơn hàng nào."));
+                          }
+          
+                          // Phân loại đơn
+                          final pending = orders
+                              .where((o) => o.status == OrderStatus.pending)
+                              .toList();
+                          final preparing = orders
+                              .where((o) => o.status == OrderStatus.preparing)
+                              .toList();
+                          final completed = orders
+                              .where((o) => o.status == OrderStatus.completed)
+                              .toList();
+          
+                          final columns = [
+                            _buildOrderColumn("Chờ xử lý", pending),
+                            _buildOrderColumn("Đang chuẩn bị", preparing),
+                            _buildOrderColumn("Đã hoàn thành", completed),
+                          ];
+          
+                          return SingleChildScrollView(
+                            child: Center(
+                              child: isWide
+                                  ? Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: columns,
+                                    )
+                                  : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: columns,
+                                    ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           );
-        },
+        }
       ),
     );
   }
