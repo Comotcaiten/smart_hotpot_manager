@@ -149,7 +149,7 @@ class _MenuScreenState extends State<MenuScreen> {
             ),
           ],
         ),
-        actions: const [],
+        actions: [Container()],
         elevation: 0,
         backgroundColor: Colors.white,
       ),

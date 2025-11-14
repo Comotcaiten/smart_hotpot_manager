@@ -144,7 +144,7 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
             children: [
               SectionHeaderIconLead(
                 title: "Quản lý Bàn", // Sửa
-                subtitle: "Thêm, sửa, xóa bàn và trạng thái", // Sửa
+                subtitle: "Thêm, sửa, xóa bàn", // Sửa
                 icon: AppIcon(
                   size: 46,
                   icon: Icons.table_restaurant_rounded, // Sửa
@@ -185,79 +185,112 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
   Widget _buildTable({required String restaurantId}) {
     // ... (Hàm này giữ nguyên, không thay đổi) ...
     // ... (Bạn có thể dán code _buildTable từ file cũ của bạn vào đây) ...
-    return StreamBuilder<List<TableModel>>(
-      // Sửa
-      stream: _tableService.getAllTables(restaurantId), // Sửa
-      builder: (context, snapshot) {
-        print("snapshot.data ${snapshot.data}");
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-              child: Text("Lỗi tải dữ liệu bàn: ${snapshot.error}"),
-            ),
-          );
-        }
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có bàn nào được thêm.")), // Sửa
-          );
-        }
-        final tables = snapshot.data!;
-        return BaseTable(
-          columnWidths: const {
-            0: FlexColumnWidth(2),
-            1: FlexColumnWidth(2),
-            2: FlexColumnWidth(2),
-            3: FlexColumnWidth(1.5),
-          },
-          buildHeaderRow: const TableRow(
-            children: [
-              HeaderCellWidgetText(content: "Tên bàn"),
-              HeaderCellWidgetText(content: "Số người"),
-              HeaderCellWidgetText(
-                content: "Trạng thái",
-                align: TextAlign.left,
-              ),
-              HeaderCellWidgetText(
-                content: "Thao tác",
-                align: TextAlign.center,
-              ),
-            ],
-          ),
-          buildDataRow: tables.map((table) {
-            return TableRow(
-              children: [
-                DataCellWidgetText(content: table.name),
-                DataCellWidgetText(content: table.seats.toString()),
-                DataCellWidgetBadge(
-                  option_1: "Trống",
-                  option_2: "Có khách",
-                  inStock: table.status == StatusTable.empty,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+
+        return StreamBuilder<List<TableModel>>(
+          // Sửa
+          stream: _tableService.getAllTables(restaurantId), // Sửa
+          builder: (context, snapshot) {
+            print("snapshot.data ${snapshot.data}");
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text("Lỗi tải dữ liệu bàn: ${snapshot.error}"),
                 ),
-                DataCellWidgetAction(
-                  editAction: () async {
-                    _openAddTableModal(
-                      table: table,
-                      restaurantId: restaurantId,
-                    );
-                  },
-                  deleteAction: () async {
-                    _deleteTable(table: table);
-                  },
-                ),
-              ],
+              );
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: Text("Chưa có bàn nào được thêm.")), // Sửa
+              );
+            }
+            final tables = snapshot.data!;
+
+                // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+                if (isWide) {
+                return BaseTable(
+              columnWidths: const {
+                0: FlexColumnWidth(2),
+                1: FlexColumnWidth(2),
+                2: FlexColumnWidth(2),
+                3: FlexColumnWidth(1.5),
+              },
+              buildHeaderRow: const TableRow(
+                children: [
+                  HeaderCellWidgetText(content: "Tên bàn"),
+                  HeaderCellWidgetText(content: "Số người"),
+                  HeaderCellWidgetText(
+                    content: "Trạng thái",
+                    align: TextAlign.left,
+                  ),
+                  HeaderCellWidgetText(
+                    content: "Thao tác",
+                    align: TextAlign.center,
+                  ),
+                ],
+              ),
+              buildDataRow: tables.map((table) {
+                return TableRow(
+                  children: [
+                    DataCellWidgetText(content: table.name),
+                    DataCellWidgetText(content: table.seats.toString()),
+                    DataCellWidgetBadge(
+                      option_1: "Trống",
+                      option_2: "Có khách",
+                      inStock: table.status == StatusTable.empty,
+                    ),
+                    DataCellWidgetAction(
+                      editAction: () async {
+                        _openAddTableModal(
+                          table: table,
+                          restaurantId: restaurantId,
+                        );
+                      },
+                      deleteAction: () async {
+                        _deleteTable(table: table);
+                      },
+                    ),
+                  ],
+                );
+              }).toList(),
             );
-          }).toList(),
+                }
+                else {
+              return Column(
+                children: tables.map((cat) {
+                  final inStock = cat.status == StatusTable.empty;
+                  final newTable = {...cat.toMap(), 'status': inStock ? "Trống" : "Có khách"};
+                  return ModelInfoSection(
+                    titles: {'name': 'Tên:', 'seats': 'Chỗ ngồi:', 'status': "Trạng thái"},
+                    contents: newTable,
+                    editAction: () async {
+                      _openAddTableModal(
+                        table: cat,
+                        restaurantId: restaurantId,
+                      );
+                    },
+                    deleteAction: () async {
+                      _deleteTable(table: cat);
+                    },
+                  );
+                }).toList(),
+              );
+
+                }
+            
+          },
         );
-      },
+      }
     );
   }
 

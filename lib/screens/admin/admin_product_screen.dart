@@ -52,7 +52,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     final res = await _authService.getAccout();
 
     if (_nameController.text.isEmpty ||
-        _priceController.text.isEmpty || 
+        _priceController.text.isEmpty ||
         _imageLinkController.text.isEmpty ||
         _selectedCategoryId == null) {
       print(
@@ -198,7 +198,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildProductTable(restaurantId:  restaurantId.restaurantId),
+              _buildProductTable(restaurantId: restaurantId.restaurantId),
             ],
           ),
         );
@@ -207,85 +207,114 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   }
 
   Widget _buildProductTable({required String restaurantId}) {
-    return StreamBuilder<List<Product>>(
-      stream: _productService.getAllProducts(restaurantId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
 
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(child: Text("Lỗi tải sản phẩm: ${snapshot.error}")),
-          );
-        }
-        // ---------------
+        return StreamBuilder<List<Product>>(
+          stream: _productService.getAllProducts(restaurantId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có sản phẩm nào được thêm.")),
-          );
-        }
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text("Lỗi tải sản phẩm: ${snapshot.error}"),
+                ),
+              );
+            }
+            // ---------------
 
-        final products = snapshot.data!;
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: Text("Chưa có sản phẩm nào được thêm.")),
+              );
+            }
 
-        return BaseTable(
-          columnWidths: const {
-            0: FlexColumnWidth(3), // Tên
-            1: FlexColumnWidth(2), // Giá
-            2: FlexColumnWidth(2), // Danh mục
-            3: FlexColumnWidth(2), // Trạng thái
-            4: FlexColumnWidth(1.5), // Thao tác
+            final products = snapshot.data!;
+
+            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+            if (isWide) {
+              return BaseTable(
+                columnWidths: const {
+                  0: FlexColumnWidth(3), // Tên
+                  1: FlexColumnWidth(2), // Giá
+                  2: FlexColumnWidth(2), // Danh mục
+                  3: FlexColumnWidth(2), // Trạng thái
+                  4: FlexColumnWidth(1.5), // Thao tác
+                },
+                buildHeaderRow: const TableRow(
+                  children: [
+                    HeaderCellWidgetText(content: "Tên sản phẩm"),
+                    HeaderCellWidgetText(content: "Giá"),
+                    HeaderCellWidgetText(content: "Danh mục"),
+                    HeaderCellWidgetText(
+                      content: "Trạng thái",
+                      align: TextAlign.left,
+                    ),
+                    HeaderCellWidgetText(
+                      content: "Thao tác",
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+                buildDataRow: products.map((prod) {
+                  // Lấy tên danh mục từ Map đã tải
+                  final categoryName =
+                      _categoryNameMap[prod.categoryId] ?? "Không rõ";
+
+                  return TableRow(
+                    children: [
+                      DataCellWidgetText(content: prod.name),
+                      DataCellWidgetText(content: "${prod.price} VNĐ"),
+                      DataCellWidgetText(content: categoryName),
+                      DataCellWidgetBadge(
+                        option_1: "Hiển thị",
+                        option_2: "Ẩn",
+                        inStock: !prod.delete,
+                      ),
+                      DataCellWidgetAction(
+                        editAction: () async {
+                          _openAddProductModal(
+                            product: prod,
+                            restaurantId: restaurantId,
+                          );
+                        },
+                        deleteAction: () async {
+                          _deleteProduct(product: prod);
+                        },
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            } else {
+              return Column(
+                children: products.map((cat) {
+                  return ModelInfoSection(
+                    titles: {'name': 'Tên:', 'price': 'Giá:'},
+                    contents: cat.toMap(),
+                    editAction: () async {
+                      _openAddProductModal(
+                        product: cat,
+                        restaurantId: restaurantId,
+                      );
+                    },
+                    deleteAction: () async {
+                      _deleteProduct(product: cat);
+                    },
+                  );
+                }).toList(),
+              );
+            }
           },
-          buildHeaderRow: const TableRow(
-            children: [
-              HeaderCellWidgetText(content: "Tên sản phẩm"),
-              HeaderCellWidgetText(content: "Giá"),
-              HeaderCellWidgetText(content: "Danh mục"),
-              HeaderCellWidgetText(
-                content: "Trạng thái",
-                align: TextAlign.left,
-              ),
-              HeaderCellWidgetText(
-                content: "Thao tác",
-                align: TextAlign.center,
-              ),
-            ],
-          ),
-          buildDataRow: products.map((prod) {
-            // Lấy tên danh mục từ Map đã tải
-            final categoryName =
-                _categoryNameMap[prod.categoryId] ?? "Không rõ";
-
-            return TableRow(
-              children: [
-                DataCellWidgetText(content: prod.name),
-                DataCellWidgetText(content: "${prod.price} VNĐ"),
-                DataCellWidgetText(content: categoryName),
-                DataCellWidgetBadge(
-                  option_1: "Hiển thị",
-                  option_2: "Ẩn",
-                  inStock: !prod.delete,
-                ),
-                DataCellWidgetAction(
-                  editAction: () async {
-                    _openAddProductModal(
-                      product: prod,
-                      restaurantId: restaurantId,
-                    );
-                  },
-                  deleteAction: () async {
-                    _deleteProduct(product: prod);
-                  },
-                ),
-              ],
-            );
-          }).toList(),
         );
       },
     );

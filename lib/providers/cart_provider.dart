@@ -107,7 +107,6 @@ class CartProvider with ChangeNotifier {
         id: '', // Service sẽ tự gán
         orderId: '', // Service sẽ tự gán
         productId: cartItem.product.id,
-        productName: cartItem.product.name,
         price: cartItem.product.price.toDouble(),
         quantity: cartItem.quantity,
         note: '', // Bạn có thể thêm trường nhập note sau

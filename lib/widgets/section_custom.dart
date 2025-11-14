@@ -38,7 +38,7 @@ class SectionHeaderIconLead extends StatelessWidget {
             ),
             Text(
               subtitle,
-              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600,),
             ),
           ],
         ),

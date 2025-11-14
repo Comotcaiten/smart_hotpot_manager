@@ -4,6 +4,7 @@ import 'package:smart_hotpot_manager/models/table.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart'; // <-- THÊM
 import 'package:smart_hotpot_manager/widgets/table_card.dart';
+import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 import 'menu_screen.dart';
 
 class TableSelectionScreen extends StatefulWidget {
@@ -91,47 +92,7 @@ class _TableSelectionScreenState extends State<TableSelectionScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.deepOrange,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.fastfood, color: Colors.white),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Chọn Bàn'),
-            Text(
-              'Vui lòng chọn bàn của bạn',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          // SỬA LẠI NÚT NÀY THÀNH "ĐĂNG XUẤT"
-          TextButton(
-            onPressed: () async {
-              setState(() {
-                _isLoading = true;
-              });
-              await _authService.logout();
-              if (mounted) {
-                // Quay về màn hình đầu tiên (WelcomeScreen)
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
-            },
-            child: const Text('Đăng xuất', style: TextStyle(color: Colors.grey)),
-          ),
-        ],
-      ),
+      appBar: TitleAppBar(title: "SmartHotpotManager", subtitle: "Chọn bàn"),
       body: Stack(
         children: [
           SingleChildScrollView(

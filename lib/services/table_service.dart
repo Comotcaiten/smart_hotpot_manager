@@ -30,7 +30,38 @@ class TableService {
   }
 
   // DELETE
-  Future<void> deleteTable(String id) async {
-    await tables.doc(id).delete();
+  Future<void> deleteTable(String tableId) async {
+    final tableRef = FirebaseFirestore.instance.collection('tables').doc(tableId);
+
+    // 1. Lấy tất cả Order thuộc table này
+    final orderSnap = await FirebaseFirestore.instance
+        .collection('orders')
+        .where('table_id', isEqualTo: tableId)
+        .get();
+
+    WriteBatch batch = FirebaseFirestore.instance.batch();
+
+    // 2. Với mỗi Order xóa order_items trong sub-collection
+    for (var orderDoc in orderSnap.docs) {
+      final orderRef = orderDoc.reference;
+
+      // Lấy các orrder_item trong sub-collection
+      final itemsSnap = await orderRef.collection('order_items').get();
+
+      // Xóa tất cả item
+      for (var itemDoc in itemsSnap.docs) {
+        batch.delete(itemDoc.reference);
+      }
+
+      // Xóa Order chính
+      batch.delete(orderRef);
+    }
+
+    // 3. Xóa Table
+    batch.delete(tableRef);
+
+    // 4. Commit tất cả
+    await batch.commit();
   }
+
 }
