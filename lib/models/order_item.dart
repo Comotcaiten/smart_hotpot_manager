@@ -14,6 +14,8 @@ class OrderItem {
   String orderId;
   double price; 
   int quantity;
+  String productId;
+  String productName;
   String note;
   DateTime createAt;
   DateTime updateAt;
@@ -21,6 +23,8 @@ class OrderItem {
   OrderItem({
     required this.id,
     required this.orderId,
+    required this.productId,
+    required this.productName,
     required this.price,
     required this.quantity,
     required this.note,
@@ -32,6 +36,8 @@ class OrderItem {
     return OrderItem(
       id: data['id'] ?? '',
       orderId: data['order_id'] ?? '',
+      productId: data['product_id'] ?? '',
+      productName: data['product_name'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       quantity: data['quantity'] ?? 0,
       note: data['note'] ?? '',
@@ -44,6 +50,8 @@ class OrderItem {
     return {
       'id': id,
       'order_id': orderId,
+      'product_id': productId,
+      'product_name': productName,
       'price': price,
       'quantity': quantity,
       'note': note,

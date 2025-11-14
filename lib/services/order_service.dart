@@ -6,8 +6,34 @@ import 'package:smart_hotpot_manager/models/order.dart';
 import 'package:smart_hotpot_manager/models/order_item.dart';
 
 class OrderService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final CollectionReference orders =
       FirebaseFirestore.instance.collection('orders');
+
+  Future<void> addOrder(Order order, List<OrderItem> items) async {
+    // 1. Tạo document Order
+    final docRef = await orders.add(order.toMap());
+    await orders.doc(docRef.id).update({'id': docRef.id});
+
+    // 2. Dùng batch write để thêm tất cả OrderItems
+    final batch = _db.batch();
+    
+    for (var item in items) {
+      // Set orderId cho từng item
+      item.orderId = docRef.id; 
+      
+      // Tạo một DocumentReference mới cho mỗi item trong sub-collection
+      final itemDocRef = orders.doc(docRef.id).collection('order_items').doc();
+      
+      // Thêm ID của chính nó vào dữ liệu
+      item.id = itemDocRef.id;
+      
+      batch.set(itemDocRef, item.toMap());
+    }
+    
+    // 3. Commit batch
+    await batch.commit();
+  }
 
   // READ: Lấy tất cả Order (cho Admin)
   Stream<List<Order>> getAllOrders(String restaurantId) {

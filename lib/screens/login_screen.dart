@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushNamed(context, AppRoutes.STAFF_HOME);
         // _notification();
       } else if (role == RoleAccount.table) {
-        Navigator.pushNamed(context, AppRoutes.TABLE);
+        Navigator.pushNamed(context, AppRoutes.TABLE, arguments: account);
       }
 
     } on FirebaseAuthException catch (e) {
