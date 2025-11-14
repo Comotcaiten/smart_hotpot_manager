@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 // Sửa imports
 import 'package:smart_hotpot_manager/models/table.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
 // Giữ lại các widget UI
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
@@ -24,7 +25,7 @@ class _StatusDisplay {
   final StatusTable status;
   final String name;
   _StatusDisplay(this.status, this.name);
-  
+
   // 'id' sẽ là giá trị được lưu (tên của enum)
   String get id => status.name;
 }
@@ -32,25 +33,23 @@ class _StatusDisplay {
 class _AdminTableScreenState extends State<AdminTableScreen> {
   // Sửa Service
   final TableService _tableService = TableService();
-
+  final _authService = AuthService();
   // Sửa Controllers cho Bàn
   final _nameController = TextEditingController();
-  final _passController = TextEditingController();
-  
+  final _seatsController = TextEditingController();
+
   // Biến này sẽ được FormFieldDataDropDown quản lý
   String? _selectedStatusName;
 
   Future<void> _saveTable({TableModel? table}) async {
     // Validate (đã được ModalForm xử lý)
-    
+    final res = await _authService.getAccout();
     // Lấy StatusTable từ tên (string) đã chọn
     final status = StatusTable.values.firstWhere(
       (e) => e.name == _selectedStatusName,
       orElse: () => StatusTable.empty,
     );
 
-    final now = DateTime.now();
-    
     // Lưu context trước khi gọi await
     final nav = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
@@ -58,46 +57,43 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
     if (table == null) {
       // Thêm mới
       final newTable = TableModel(
-        restaurantId: "R001",
+        restaurantId: res!.restaurantId,
         id: "", // id sẽ được gán tự động
         name: _nameController.text.trim(),
-        pass: _passController.text.trim(),
+        seats: int.tryParse(_seatsController.text.trim()) ?? 0,
         status: status, // Dùng status đã chuyển đổi
-        createAt: now,
-        updateAt: now,
       );
-      await _tableService.addTable(newTable); 
+      await _tableService.addTable(newTable);
     } else {
       // Cập nhật
-      await _tableService.updateTable( 
+      await _tableService.updateTable(
         TableModel(
           restaurantId: table.restaurantId,
           id: table.id,
           name: _nameController.text.trim(),
-          pass: _passController.text.trim(),
+          seats: int.tryParse(_seatsController.text.trim()) ?? 0,
           status: status, // Dùng status đã chuyển đổi
-          createAt: table.createAt, // Giữ ngày tạo
-          updateAt: now, // Cập nhật
         ),
       );
     }
 
     _nameController.clear();
-    _passController.clear();
+    _seatsController.clear();
     _selectedStatusName = null;
 
-    String notification =
-        table == null ? "Thêm bàn thành công!" : "Chỉnh sửa thành công";
+    String notification = table == null
+        ? "Thêm bàn thành công!"
+        : "Chỉnh sửa thành công";
 
     nav.pop(); // đóng modal
 
-    messenger.showSnackBar(SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.green,
-    ));
+    messenger.showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.green),
+    );
   }
 
-  Future<void> _deleteTable({TableModel? table}) async { // Sửa
+  Future<void> _deleteTable({TableModel? table}) async {
+    // Sửa
     String notification;
 
     if (table == null) {
@@ -109,12 +105,9 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.red,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -123,59 +116,80 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
   }
 
   Widget _buildMainLayout() {
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeaderIconLead(
-            title: "Quản lý Bàn", // Sửa
-            subtitle: "Thêm, sửa, xóa bàn và trạng thái", // Sửa
-            icon: AppIcon(
-              size: 46,
-              icon: Icons.table_restaurant_rounded, // Sửa
-              colors: [Colors.purple, Colors.black], // Sửa
-            ),
+    return FutureBuilder(
+      future: _authService.getAccout(),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Không tìm thấy nhà hàng.'));
+        }
+
+        final restaurantId = asyncSnapshot.data!;
+
+        print("restaurant: ${restaurantId.restaurantId}");
+
+        return Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm bàn mới"), // Sửa
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderIconLead(
+                title: "Quản lý Bàn", // Sửa
+                subtitle: "Thêm, sửa, xóa bàn và trạng thái", // Sửa
+                icon: AppIcon(
+                  size: 46,
+                  icon: Icons.table_restaurant_rounded, // Sửa
+                  colors: [Colors.purple, Colors.black], // Sửa
                 ),
               ),
-              onPressed: () {
-                _openAddTableModal(); // Sửa
-              },
-            ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text("Thêm bàn mới"), // Sửa
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    _openAddTableModal(
+                      restaurantId: restaurantId.restaurantId,
+                    ); // Sửa
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              // SỬA: Thêm Expanded để fix lỗi layout
+              _buildTable(restaurantId: restaurantId.restaurantId),
+            ],
           ),
-          const SizedBox(height: 16),
-          // SỬA: Thêm Expanded để fix lỗi layout
-          _buildTable()
-        ],
-      ),
+        );
+      },
     );
   }
 
   // Xây dựng bảng Bàn
-  Widget _buildTable() { 
+  Widget _buildTable({required String restaurantId}) {
     // ... (Hàm này giữ nguyên, không thay đổi) ...
     // ... (Bạn có thể dán code _buildTable từ file cũ của bạn vào đây) ...
-    return StreamBuilder<List<TableModel>>( // Sửa
-      stream: _tableService.getAllTables(), // Sửa
+    return StreamBuilder<List<TableModel>>(
+      // Sửa
+      stream: _tableService.getAllTables(restaurantId), // Sửa
       builder: (context, snapshot) {
+        print("snapshot.data ${snapshot.data}");
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
             padding: EdgeInsets.all(16),
@@ -185,7 +199,9 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
         if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: Center(child: Text("Lỗi tải dữ liệu bàn: ${snapshot.error}")),
+            child: Center(
+              child: Text("Lỗi tải dữ liệu bàn: ${snapshot.error}"),
+            ),
           );
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -196,39 +212,45 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
         }
         final tables = snapshot.data!;
         return BaseTable(
-          columnWidths: const { 
+          columnWidths: const {
             0: FlexColumnWidth(2),
             1: FlexColumnWidth(2),
             2: FlexColumnWidth(2),
             3: FlexColumnWidth(1.5),
           },
           buildHeaderRow: const TableRow(
-            children: [ 
+            children: [
               HeaderCellWidgetText(content: "Tên bàn"),
-              HeaderCellWidgetText(content: "Mật khẩu"),
-              HeaderCellWidgetText(content: "Trạng thái", align: TextAlign.left),
+              HeaderCellWidgetText(content: "Số người"),
+              HeaderCellWidgetText(
+                content: "Trạng thái",
+                align: TextAlign.left,
+              ),
               HeaderCellWidgetText(
                 content: "Thao tác",
                 align: TextAlign.center,
               ),
             ],
           ),
-          buildDataRow: tables.map((table) { 
+          buildDataRow: tables.map((table) {
             return TableRow(
               children: [
-                DataCellWidgetText(content: table.name), 
-                DataCellWidgetText(content: table.pass), 
+                DataCellWidgetText(content: table.name),
+                DataCellWidgetText(content: table.seats.toString()),
                 DataCellWidgetBadge(
-                  option_1: "Trống", 
+                  option_1: "Trống",
                   option_2: "Có khách",
                   inStock: table.status == StatusTable.empty,
                 ),
                 DataCellWidgetAction(
                   editAction: () async {
-                    _openAddTableModal(table: table); 
+                    _openAddTableModal(
+                      table: table,
+                      restaurantId: restaurantId,
+                    );
                   },
                   deleteAction: () async {
-                    _deleteTable(table: table); 
+                    _deleteTable(table: table);
                   },
                 ),
               ],
@@ -240,23 +262,26 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
   }
 
   // SỬA: Toàn bộ hàm này để dùng ModalForm
-  void _openAddTableModal({TableModel? table}) {
+  void _openAddTableModal({TableModel? table, required String restaurantId}) {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = table?.name ?? '';
-    _passController.text = table?.pass ?? '';
+    _seatsController.text = table?.seats.toString() ?? '';
     _selectedStatusName = table?.status.name; // Lưu tên của enum (String)
 
     // Tạo danh sách các lựa chọn trạng thái
     final statusOptions = StatusTable.values.map((status) {
       // Dùng model để lấy tên Tiếng Việt
       String text = TableModel(
-              id: '', restaurantId: '', name: '', pass: '',
-              status: status, createAt: DateTime.now(), updateAt: DateTime.now())
-          .statusString;
+        id: '',
+        restaurantId: '',
+        name: '',
+        seats: 0,
+        status: status,
+      ).statusString;
       // Trả về class _StatusDisplay
       return _StatusDisplay(status, text);
     }).toList();
-    
+
     // Tạo 1 stream từ danh sách tĩnh này
     final statusStream = Stream.value(statusOptions);
 
@@ -265,7 +290,7 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
       builder: (context) {
         return ModalForm(
           title: table == null ? "Thêm bàn mới" : "Chỉnh sửa bàn",
-          
+
           // Danh sách các trường (Text và Dropdown)
           fields: [
             // 1. Tên bàn
@@ -280,21 +305,27 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
                 return null;
               },
             ),
-            
+
             // 2. Mật khẩu
             FormFieldDataText(
               label: "Mật khẩu",
               hintText: "VD: 123456",
-              controller: _passController,
+              controller: _seatsController,
               keyboardType: TextInputType.number,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return "Vui lòng nhập mật khẩu";
+                  return "Không được để trống";
+                }
+                if (int.tryParse(value) == null) {
+                  return "Phải là một con số";
+                }
+                if (int.parse(value) < 0) {
+                  return "Phải lớn hơn hoặc bằng 0";
                 }
                 return null;
               },
             ),
-            
+
             // 3. Trạng thái (Dropdown)
             FormFieldDataDropDown(
               label: "Trạng thái",
@@ -313,7 +344,7 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
               },
             ),
           ],
-          
+
           // Hàm được gọi khi nhấn "Lưu"
           onSubmit: () async {
             _saveTable(table: table);

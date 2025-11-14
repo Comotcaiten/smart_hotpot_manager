@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum StatusTable { inUse, empty, reserved }
+enum StatusTable { inUse, empty, set }
 
 class TableModel {
   final String restaurantId;
@@ -28,8 +28,22 @@ class TableModel {
         return "Đang sử dụng";
       case StatusTable.empty:
         return "Còn trống";
-      case StatusTable.reserved:
+      case StatusTable.set:
         return "Đã đặt";
+    }
+  }
+
+  // Giữ nguyên getter của bạn
+  String get statusString {
+     switch (status) {
+      case StatusTable.inUse:
+        return "Đang sử dụng";
+      case StatusTable.empty:
+        return "Còn trống";
+      case StatusTable.set:
+        return "Đã đặt";
+      default:
+        return "Không rõ";
     }
   }
 

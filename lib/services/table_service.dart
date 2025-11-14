@@ -13,11 +13,15 @@ class TableService {
 
   // READ (tùy chọn)
   Stream<List<TableModel>> getAllTables(String restaurantId) {
-    return tables.where("restaurantId", isEqualTo: restaurantId).snapshots().map((snapshot) {
+
+    print(restaurantId);
+    final data = tables.where("restaurant_id", isEqualTo: restaurantId).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         return TableModel.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
     });
+    print("Data ${data.first}");
+    return data;
   }
 
   // UPDATE
