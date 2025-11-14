@@ -11,7 +11,7 @@ DateTime _timestampToDateTime(dynamic timestamp) {
 StatusOrder _stringToStatus(String? statusName) {
   return StatusOrder.values.firstWhere(
     (e) => e.name == statusName,
-    orElse: () => StatusOrder.pending, 
+    orElse: () => StatusOrder.pending,
   );
 }
 // ---------------------------------

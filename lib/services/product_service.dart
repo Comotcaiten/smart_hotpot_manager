@@ -24,6 +24,15 @@ class ProductService {
     });
   }
 
+  Stream<Product?> getProductByDocId(String id) {
+    return products.doc(id).snapshots().map((doc) {
+      if (doc.exists) {
+        return Product.fromMap(doc.data()! as Map<String, dynamic>);
+      }
+      return null;
+    });
+  }
+
   // UPDATE
   Future<void> updateProduct(Product product) async {
     await products.doc(product.id).update(product.toMap());

@@ -1,9 +1,10 @@
 // lib/widgets/order_status_tag.dart
 import 'package:flutter/material.dart';
+import 'package:smart_hotpot_manager/models/order.dart';
 import 'package:smart_hotpot_manager/responsitories/staff_order_repository.dart';// Import để dùng enum
 
 class OrderStatusTag extends StatelessWidget {
-  final OrderStatus status;
+  final StatusOrder status;
   const OrderStatusTag({super.key, required this.status});
 
   @override
@@ -13,18 +14,24 @@ class OrderStatusTag extends StatelessWidget {
     Color textColor = Colors.white; // Mặc định chữ trắng
 
     switch (status) {
-      case OrderStatus.pending:
+      case StatusOrder.pending:
         text = "Chờ xử lý";
         backgroundColor = Colors.orange;
         break;
-      case OrderStatus.preparing:
+      case StatusOrder.preparing:
         text = "Đang chuẩn bị";
         backgroundColor = Colors.blue.shade700;
         break;
-      case OrderStatus.completed:
+      case StatusOrder.complete:
         text = "Hoàn thành";
         backgroundColor = Colors.green;
         break;
+      case StatusOrder.served:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case StatusOrder.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return Container(
