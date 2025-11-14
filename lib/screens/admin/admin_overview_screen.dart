@@ -117,8 +117,8 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
         .length;
     int totalTables = allTables.length;
 
-    // 4. Tăng trưởng (Giữ nguyên)
-    String growth = "+15%";
+    // // 4. Tăng trưởng (Giữ nguyên)
+    // String growth = "+15%";
 
     // ------------------------------------
 
@@ -152,14 +152,14 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
         ),
       ),
       const SizedBox(width: 16),
-      Expanded(
-        child: SummaryCard(
-          title: "Tăng trưởng",
-          value: growth,
-          icon: Icons.trending_up,
-          iconColor: Colors.purple,
-        ),
-      ),
+      // Expanded(
+      //   child: SummaryCard(
+      //     title: "Tăng trưởng",
+      //     value: growth,
+      //     icon: Icons.trending_up,
+      //     iconColor: Colors.purple,
+      //   ),
+      // ),
     ];
 
     List<Widget> herosColumns = [
@@ -192,15 +192,15 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
           iconColor: Colors.orange,
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SummaryCard(
-          title: "Tăng trưởng",
-          value: growth,
-          icon: Icons.trending_up,
-          iconColor: Colors.purple,
-        ),
-      ),
+      // Padding(
+      //   padding: const EdgeInsets.all(8.0),
+      //   child: SummaryCard(
+      //     title: "Tăng trưởng",
+      //     value: growth,
+      //     icon: Icons.trending_up,
+      //     iconColor: Colors.purple,
+      //   ),
+      // ),
     ];
 
     return LayoutBuilder(
