@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
+import 'package:smart_hotpot_manager/models/product.dart';
 
 class CategoryService {
   final CollectionReference categorys =
       FirebaseFirestore.instance.collection('categorys');
+  final CollectionReference products =
+      FirebaseFirestore.instance.collection('products');
+      
 
   // CREATE
   Future<void> addCategory(Category category) async {
@@ -28,5 +32,11 @@ class CategoryService {
   // DELETE
   Future<void> deleteCategory(String id) async {
     await categorys.doc(id).delete();
+    
+    final snapshot = await products.where("category_id", isEqualTo: id).get();
+
+    for (var doc in snapshot.docs) {
+      await products.doc(doc.id).delete();
+    }
   }
 }
