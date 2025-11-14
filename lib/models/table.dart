@@ -1,79 +1,75 @@
-// lib/models/table_model.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Hàm helper để chuyển đổi Timestamp từ Firestore một cách an toàn
-DateTime _timestampToDateTime(dynamic timestamp) {
-  if (timestamp is Timestamp) {
-    return timestamp.toDate();
-  }
-  return DateTime.now(); // Trả về an toàn nếu dữ liệu null
-}
-
-StatusTable _stringToStatus(String? statusName) {
-  return StatusTable.values.firstWhere(
-    (e) => e.name == statusName,
-    orElse: () => StatusTable.empty,
-  );
-}
-
-enum StatusTable { inUse, empty, set }
+enum StatusTable { inUse, empty, reserved }
 
 class TableModel {
-  String restaurantId;
-  String id;
-  String name;
-  String pass;
-  StatusTable status;
-  DateTime createAt;
-  DateTime updateAt;
-
-  // Giữ nguyên getter của bạn
-  String get statusString {
-     switch (status) {
-      case StatusTable.inUse:
-        return "Đang sử dụng";
-      case StatusTable.empty:
-        return "Còn trống";
-      case StatusTable.set:
-        return "Đã đặt";
-      default:
-        return "Không rõ";
-    }
-  }
+  final String restaurantId;
+  final String id;
+  final String name;
+  final StatusTable status;
+  final int seats; // số chỗ ngồi
+  // final DateTime createAt;
+  // final DateTime updateAt;
 
   TableModel({
     required this.restaurantId,
     required this.id,
     required this.name,
-    required this.pass,
     required this.status,
-    required this.createAt,
-    required this.updateAt,
+    required this.seats,
+    // required this.createAt,
+    // required this.updateAt,
   });
 
+  // Hiển thị trạng thái tiếng Việt
+  String get statusLabel {
+    switch (status) {
+      case StatusTable.inUse:
+        return "Đang sử dụng";
+      case StatusTable.empty:
+        return "Còn trống";
+      case StatusTable.reserved:
+        return "Đã đặt";
+    }
+  }
+
+  // Parse Firestore map → model
   factory TableModel.fromMap(Map<String, dynamic> data) {
+    StatusTable parseStatus(String? name) {
+      return StatusTable.values.firstWhere(
+        (e) => e.name == name,
+        orElse: () => StatusTable.empty,
+      );
+    }
+
     return TableModel(
       restaurantId: data['restaurant_id'] ?? '',
       id: data['id'] ?? '',
       name: data['name'] ?? '',
-      pass: data['pass'] ?? '',
-      // <-- SỬA: Đọc status từ String
-      status: _stringToStatus(data['status']),
-      // <-- SỬA: Chuyển đổi Timestamp an toàn
-      createAt: _timestampToDateTime(data['create_at']),
-      updateAt: _timestampToDateTime(data['update_at']),
+      status: parseStatus(data['status']),
+      seats: (data['seats'] ?? 0) is int
+          ? data['seats']
+          : int.tryParse(data['seats'].toString()) ?? 0,
+      // createAt: (data['create_at'] is Timestamp)
+      //     ? (data['create_at'] as Timestamp).toDate()
+      //     : DateTime.now(),
+      // updateAt: (data['update_at'] is Timestamp)
+      //     ? (data['update_at'] as Timestamp).toDate()
+      //     : DateTime.now(),
     );
   }
 
+  // Convert model → Firestore map
   Map<String, dynamic> toMap() {
     return {
       'restaurant_id': restaurantId,
       'id': id,
       'name': name,
-      'pass': pass,
       'status': status.name,
-      'create_at': createAt,
-      'update_at': updateAt,
+      'seats': seats,
+      // dùng Timestamp thay vì DateTime
+      // 'create_at': Timestamp.fromDate(createAt),
+      // 'update_at': Timestamp.fromDate(updateAt),
     };
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/utils/utils.dart';
 
 class AuthGuard {
   final AuthService _authService = AuthService();
@@ -12,14 +12,14 @@ class AuthGuard {
 
     // Nếu chưa đăng nhập → chuyển sang login
     if (user == null) {
-      _redirectToLogin(context, requiredRole);
+      redirectToLogin(context, requiredRole);
       return false;
     }
 
     // Lấy dữ liệu user từ Firestore
-    final restaurant = await _authService.getRestaurant();
+    final restaurant = await _authService.getAccout();
     if (restaurant == null) {
-      _redirectToLogin(context, requiredRole);
+      redirectToLogin(context, requiredRole);
       return false;
     }
 
@@ -30,11 +30,11 @@ class AuthGuard {
 
     // Nếu role không khớp -> đăng xuất và chuyển sang WelcomeScreen
     await _authService.logout();
-    _redirectToWelcome(context);
+    redirectToWelcome(context);
     return false;
   }
 
-  void _redirectToLogin(BuildContext context, RoleAccount role) {
+  void redirectToLogin(BuildContext context, RoleAccount role) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.LOGIN,
@@ -44,7 +44,7 @@ class AuthGuard {
     });
   }
 
-  void _redirectToWelcome(BuildContext context) {
+  void redirectToWelcome(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.WELCOME,

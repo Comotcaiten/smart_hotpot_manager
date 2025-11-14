@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/product.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
 import 'package:smart_hotpot_manager/services/product_service.dart';
 import 'package:smart_hotpot_manager/widgets/app_icon.dart';
@@ -18,6 +19,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   // Service
   final ProductService _productService = ProductService();
   final CategoryService _categoryService = CategoryService();
+  final _authService = AuthService();
 
   // Controllers
   final _nameController = TextEditingController();
@@ -35,7 +37,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   // Tải danh sách category 1 lần để tra cứu
   Future<void> _loadCategoryNames() async {
-    final categories = await _categoryService.getAllCategories().first;
+    final res = await _authService.getAccout();
+    final categories = await _categoryService
+        .getAllCategories(res!.restaurantId)
+        .first;
     setState(() {
       _categoryNameMap = {for (var cat in categories) cat.id: cat.name};
     });
@@ -43,10 +48,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
   Future<void> _saveProduct({Product? product}) async {
     // Validate
+    final res = await _authService.getAccout();
+
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _selectedCategoryId == null) {
-          print("${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}");
+      print(
+        "${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}",
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Vui lòng điền đầy đủ thông tin (Tên, Giá, Danh mục)"),
@@ -63,7 +72,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (product == null) {
       // Thêm mới
       final newProduct = Product(
-        restaurantId: "R001",
+        restaurantId: res!.restaurantId,
         id: "",
         name: _nameController.text.trim(),
         price: int.tryParse(_priceController.text.trim()) ?? 0,
@@ -132,55 +141,71 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   }
 
   Widget _buildMainLayout() {
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeaderIconLead(
-            title: "Quản lý Sản phẩm",
-            subtitle: "Thêm, sửa, xóa món ăn",
-            icon: AppIcon(
-              size: 46,
-              icon: Icons.restaurant_menu,
-              colors: [Colors.green, Colors.black],
-            ),
+    return FutureBuilder(
+      future: _authService.getAccout(),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Không tìm thấy nhà hàng.'));
+        }
+
+        final restaurantId = asyncSnapshot.data!;
+        return Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm sản phẩm"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderIconLead(
+                title: "Quản lý Sản phẩm",
+                subtitle: "Thêm, sửa, xóa món ăn",
+                icon: AppIcon(
+                  size: 46,
+                  icon: Icons.restaurant_menu,
+                  colors: [Colors.green, Colors.black],
                 ),
               ),
-              onPressed: () {
-                _openAddProductModal();
-              },
-            ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text("Thêm sản phẩm"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    _openAddProductModal(
+                      restaurantId: restaurantId.restaurantId,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildProductTable(restaurantId:  restaurantId.restaurantId),
+            ],
           ),
-          const SizedBox(height: 16),
-          _buildProductTable(),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildProductTable() {
+  Widget _buildProductTable({required String restaurantId}) {
     return StreamBuilder<List<Product>>(
-      stream: _productService.getAllProducts(),
+      stream: _productService.getAllProducts(restaurantId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(
@@ -246,7 +271,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ),
                 DataCellWidgetAction(
                   editAction: () async {
-                    _openAddProductModal(product: prod);
+                    _openAddProductModal(
+                      product: prod,
+                      restaurantId: restaurantId,
+                    );
                   },
                   deleteAction: () async {
                     _deleteProduct(product: prod);
@@ -261,7 +289,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   }
 
   // Modal để thêm/sửa sản phẩm
-  void _openAddProductModal({Product? product}) {
+  void _openAddProductModal({Product? product, required String restaurantId}) {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = product?.name ?? '';
     _priceController.text = product?.price.toString() ?? '';
@@ -299,12 +327,11 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           FormFieldDataDropDown(
             label: "Danh mục",
             hintText: "Chọn danh mục",
-            stream: _categoryService.getAllCategories(),
+            stream: _categoryService.getAllCategories(restaurantId),
             selectedValue: _selectedCategoryId,
-            onChanged: (value) => {
-              _selectedCategoryId = value.toString(),
-            },
-            validator: (value) => value == null ? "Vui lòng chọn danh mục" : null,
+            onChanged: (value) => {_selectedCategoryId = value.toString()},
+            validator: (value) =>
+                value == null ? "Vui lòng chọn danh mục" : null,
           ),
         ],
         onSubmit: () async {

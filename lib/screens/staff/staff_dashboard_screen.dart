@@ -71,74 +71,76 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      backgroundColor: Colors.grey.shade100, // Màu nền xám nhạt
-      // Nút ? ở góc
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Colors.black87,
-        foregroundColor: Colors.white,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.help_outline),
-      ),
-      // 3. Dùng FutureBuilder để chờ dữ liệu
-      body: FutureBuilder<List<StaffOrder>>(
-        future: _ordersFuture,
-        builder: (context, snapshot) {
-          // Trạng thái đang tải
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          // Trạng thái lỗi
-          if (snapshot.hasError) {
-            return Center(child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
-          }
-          // Trạng thái không có dữ liệu
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Không có đơn hàng nào."));
-          }
-
-          // 4. Tải dữ liệu thành công -> Phân loại dữ liệu
-          final allOrders = snapshot.data!;
-          final pendingOrders = allOrders
-              .where((o) => o.status == OrderStatus.pending)
-              .toList();
-          final preparingOrders = allOrders
-              .where((o) => o.status == OrderStatus.preparing)
-              .toList();
-          final completedOrders = allOrders
-              .where((o) => o.status == OrderStatus.completed)
-              .toList();
-
-          // 5. Xây dựng layout 3 cột (dùng Row + Expanded)
-          // Bọc trong SingleChildScrollView để cuộn ngang trên màn hình nhỏ
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              padding: const EdgeInsets.all(16.0),
-              // Đặt chiều rộng tối thiểu cho toàn bộ khu vực
-              constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width), 
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildOrderColumn(
-                    "Chờ xử lý (${pendingOrders.length})",
-                    pendingOrders,
-                  ),
-                  _buildOrderColumn(
-                    "Đang chuẩn bị (${preparingOrders.length})",
-                    preparingOrders,
-                  ),
-                  _buildOrderColumn(
-                    "Đã hoàn thành (${completedOrders.length})",
-                    completedOrders,
-                  ),
-                ],
+    return SingleChildScrollView(
+      child: Scaffold(
+        appBar: _buildAppBar(),
+        backgroundColor: Colors.grey.shade100, // Màu nền xám nhạt
+        // Nút ? ở góc
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {},
+          backgroundColor: Colors.black87,
+          foregroundColor: Colors.white,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.help_outline),
+        ),
+        // 3. Dùng FutureBuilder để chờ dữ liệu
+        body: FutureBuilder<List<StaffOrder>>(
+          future: _ordersFuture,
+          builder: (context, snapshot) {
+            // Trạng thái đang tải
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            // Trạng thái lỗi
+            if (snapshot.hasError) {
+              return Center(child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
+            }
+            // Trạng thái không có dữ liệu
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("Không có đơn hàng nào."));
+            }
+      
+            // 4. Tải dữ liệu thành công -> Phân loại dữ liệu
+            final allOrders = snapshot.data!;
+            final pendingOrders = allOrders
+                .where((o) => o.status == OrderStatus.pending)
+                .toList();
+            final preparingOrders = allOrders
+                .where((o) => o.status == OrderStatus.preparing)
+                .toList();
+            final completedOrders = allOrders
+                .where((o) => o.status == OrderStatus.completed)
+                .toList();
+      
+            // 5. Xây dựng layout 3 cột (dùng Row + Expanded)
+            // Bọc trong SingleChildScrollView để cuộn ngang trên màn hình nhỏ
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                // Đặt chiều rộng tối thiểu cho toàn bộ khu vực
+                constraints: BoxConstraints(minWidth: MediaQuery.of(context).size.width), 
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildOrderColumn(
+                      "Chờ xử lý (${pendingOrders.length})",
+                      pendingOrders,
+                    ),
+                    _buildOrderColumn(
+                      "Đang chuẩn bị (${preparingOrders.length})",
+                      preparingOrders,
+                    ),
+                    _buildOrderColumn(
+                      "Đã hoàn thành (${completedOrders.length})",
+                      completedOrders,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

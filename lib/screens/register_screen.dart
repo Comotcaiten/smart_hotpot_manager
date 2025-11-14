@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/models/restaurant.dart';
+import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
-import 'package:smart_hotpot_manager/utils/app_routes.dart';
+import 'package:smart_hotpot_manager/utils/utils.dart';
 import 'package:smart_hotpot_manager/widgets/button_custom.dart';
 import 'package:smart_hotpot_manager/widgets/field_custom.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
@@ -25,10 +25,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   final _authServices = AuthService();
 
-  // Regex pattern
-  final _nameRegex = RegExp(r'^[a-zA-ZÀ-ỹ0-9\s]+$'); // không ký tự đặc biệt
-  final _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-
   Future<void> _registerRestaurant() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -39,17 +35,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _passController.text = _passController.text.trim();
 
       // Tạo đối tượng Restaurant model
-      final restaurant = Restaurant(
+      final restaurant = Account(
         id: '',
+        restaurantId: "",
         name: _nameController.text.trim(),
         gmail: _gmailController.text.trim(),
         pass: _passController.text.trim(),
         role: RoleAccount.admin,
-        createAt: DateTime.now(),
-        updateAt: DateTime.now(),
       );
 
-      await _authServices.register(restaurant);
+      await _authServices.register(restaurant, null);
 
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -108,7 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       if (value == null || value.trim().isEmpty) {
                         return "Vui lòng nhập tên nhà hàng";
                       }
-                      if (!_nameRegex.hasMatch(value.trim())) {
+                      if (!RegexPattern.nameRegex.hasMatch(value.trim())) {
                         return "Tên không được chứa ký tự đặc biệt hoặc số";
                       }
                       return null;
@@ -121,11 +116,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       labelText: "Gmail",
                       border: OutlineInputBorder(),
                     ),
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Vui lòng nhập Gmail";
                       }
-                      if (!_emailRegex.hasMatch(value.trim())) {
+                      if (!RegexPattern.emailRegex.hasMatch(value.trim())) {
                         return "Định dạng Gmail không hợp lệ";
                       }
                       return null;

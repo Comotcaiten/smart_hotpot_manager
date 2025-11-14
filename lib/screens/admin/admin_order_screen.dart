@@ -1,8 +1,10 @@
+// TODO: Fix table
 // lib/screens/admin/admin_order_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import để format tiền và giờ
 // Sửa import
 import 'package:smart_hotpot_manager/models/order.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 // import 'package:smart_hotpot_manager/models/table_model.dart';
 import 'package:smart_hotpot_manager/services/order_service.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
@@ -23,13 +25,11 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   // Sửa Service
   final OrderService _orderService = OrderService();
   final TableService _tableService = TableService(); // Cần để lấy tên bàn
+  final AuthService _authService = AuthService();
 
   // Map để tra cứu tên Bàn (tableId -> tableName)
   Map<String, String> _tableNameMap = {};
 
-  // Xóa controllers
-  // final _nameController = TextEditingController();
-  // final _descriptionController = TextEditingController();
 
   @override
   void initState() {
@@ -39,7 +39,10 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
   // Hàm mới: Tải tên các bàn để hiển thị
   Future<void> _loadTableNames() async {
-    final tables = await _tableService.getAllTables().first;
+    // Validate
+    final res = await _authService.getAccout();
+
+    final tables = await _tableService.getAllTables(res!.restaurantId).first;
     setState(() {
       _tableNameMap = {for (var table in tables) table.id: table.name};
     });
@@ -74,40 +77,55 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   }
 
   Widget _buildMainLayout() {
-    return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // Sửa: bỏ MainAxisAlignment
-        children: [
-          SectionHeaderIconLead(
-            title: "Tất cả đơn hàng", // Sửa
-            subtitle: "Quản lý và theo dõi đơn hàng", // Sửa
-            icon: AppIcon(
-              size: 46,
-              icon: Icons.receipt_long_rounded, // Sửa
-              colors: [Colors.orange, Colors.black], // Sửa
-            ),
+    return FutureBuilder(
+      future: _authService.getAccout(),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Không tìm thấy nhà hàng.'));
+        }
+
+        final restaurantId = asyncSnapshot.data!;
+
+        return Container(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
           ),
-          const SizedBox(height: 16),
-          _buildOrderTable()
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start, // Sửa: bỏ MainAxisAlignment
+            children: [
+              SectionHeaderIconLead(
+                title: "Tất cả đơn hàng", // Sửa
+                subtitle: "Quản lý và theo dõi đơn hàng", // Sửa
+                icon: AppIcon(
+                  size: 46,
+                  icon: Icons.receipt_long_rounded, // Sửa
+                  colors: [Colors.orange, Colors.black], // Sửa
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildOrderTable(restaurantId: restaurantId.restaurantId)
+            ],
+          ),
+        );
+      }
     );
   }
 
-  Widget _buildOrderTable() { // Sửa
+  Widget _buildOrderTable({required String restaurantId}) { // Sửa
     // Định dạng tiền tệ và thời gian
     final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
     final timeFormat = DateFormat('HH:mm');
 
     return StreamBuilder<List<Order>>( // Sửa
-      stream: _orderService.getAllOrders(), // Sửa
+      stream: _orderService.getAllOrders(restaurantId), // Sửa
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Padding(

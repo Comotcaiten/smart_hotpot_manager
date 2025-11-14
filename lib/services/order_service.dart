@@ -10,9 +10,9 @@ class OrderService {
       FirebaseFirestore.instance.collection('orders');
 
   // READ: Lấy tất cả Order (cho Admin)
-  Stream<List<Order>> getAllOrders() {
+  Stream<List<Order>> getAllOrders(String restaurantId) {
     // Sắp xếp theo thời gian tạo mới nhất
-    return orders.orderBy('create_at', descending: true).snapshots().map((snapshot) {
+    return orders.where("restaurantId", isEqualTo: restaurantId).orderBy('create_at', descending: true).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         // Nhờ import ở trên, Dart biết 'Order.fromMap' sẽ trả về 'Order'
         return Order.fromMap(doc.data() as Map<String, dynamic>);

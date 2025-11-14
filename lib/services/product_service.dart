@@ -16,8 +16,8 @@ class ProductService {
   }
 
   // READ
-  Stream<List<Product>> getAllProducts() {
-    return products.orderBy('name').snapshots().map((snapshot) {
+  Stream<List<Product>> getAllProducts(String restaurantId) {
+    return products.where("restaurantId", isEqualTo: restaurantId).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         return Product.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
