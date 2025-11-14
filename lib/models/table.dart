@@ -8,8 +8,8 @@ class TableModel {
   final String name;
   final StatusTable status;
   final int seats; // số chỗ ngồi
-  final DateTime createAt;
-  final DateTime updateAt;
+  // final DateTime createAt;
+  // final DateTime updateAt;
 
   TableModel({
     required this.restaurantId,
@@ -17,8 +17,8 @@ class TableModel {
     required this.name,
     required this.status,
     required this.seats,
-    required this.createAt,
-    required this.updateAt,
+    // required this.createAt,
+    // required this.updateAt,
   });
 
   // Hiển thị trạng thái tiếng Việt
@@ -50,12 +50,12 @@ class TableModel {
       seats: (data['seats'] ?? 0) is int
           ? data['seats']
           : int.tryParse(data['seats'].toString()) ?? 0,
-      createAt: (data['create_at'] is Timestamp)
-          ? (data['create_at'] as Timestamp).toDate()
-          : DateTime.now(),
-      updateAt: (data['update_at'] is Timestamp)
-          ? (data['update_at'] as Timestamp).toDate()
-          : DateTime.now(),
+      // createAt: (data['create_at'] is Timestamp)
+      //     ? (data['create_at'] as Timestamp).toDate()
+      //     : DateTime.now(),
+      // updateAt: (data['update_at'] is Timestamp)
+      //     ? (data['update_at'] as Timestamp).toDate()
+      //     : DateTime.now(),
     );
   }
 
@@ -68,8 +68,8 @@ class TableModel {
       'status': status.name,
       'seats': seats,
       // dùng Timestamp thay vì DateTime
-      'create_at': Timestamp.fromDate(createAt),
-      'update_at': Timestamp.fromDate(updateAt),
+      // 'create_at': Timestamp.fromDate(createAt),
+      // 'update_at': Timestamp.fromDate(updateAt),
     };
   }
 }

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 // Import các model và service THẬT
 import 'package:smart_hotpot_manager/models/order.dart';
 import 'package:smart_hotpot_manager/models/table.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/order_service.dart';
 import 'package:smart_hotpot_manager/services/table_service.dart';
 // Import các widget UI
@@ -23,6 +24,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
   // Dùng các service thật
   final OrderService _orderService = OrderService();
   final TableService _tableService = TableService();
+  final AuthService _authService = AuthService();
 
   // Dùng Future.wait để tải đồng thời 2 nguồn dữ liệu
   late Future<Map<String, dynamic>> _dataFuture;
@@ -38,9 +40,11 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
 
   // Hàm tải dữ liệu từ 2 service
   Future<Map<String, dynamic>> _loadData() async {
+
+    final res = await _authService.getAccout();
     // Dùng .first để lấy dữ liệu 1 lần từ Stream
-    final allOrders = await _orderService.getAllOrders().first;
-    final allTables = await _tableService.getAllTables().first;
+    final allOrders = await _orderService.getAllOrders(res!.restaurantId).first;
+    final allTables = await _tableService.getAllTables(res.restaurantId).first;
 
     // Tải map tên bàn để tra cứu
     _tableNameMap = {for (var table in allTables) table.id: table.name};

@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/widgets.dart';
 import 'package:smart_hotpot_manager/models/table.dart';
 
 class TableService {
@@ -13,8 +12,8 @@ class TableService {
   }
 
   // READ (tùy chọn)
-  Stream<List<TableModel>> getAllTables() {
-    return tables.snapshots().map((snapshot) {
+  Stream<List<TableModel>> getAllTables(String restaurantId) {
+    return tables.where("restaurantId", isEqualTo: restaurantId).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         return TableModel.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();

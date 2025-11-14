@@ -38,7 +38,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   // Tải danh sách category 1 lần để tra cứu
   Future<void> _loadCategoryNames() async {
     final res = await _authService.getAccout();
-    final categories = await _categoryService.getAllCategories(res!.restaurantId).first;
+    final categories = await _categoryService
+        .getAllCategories(res!.restaurantId)
+        .first;
     setState(() {
       _categoryNameMap = {for (var cat in categories) cat.id: cat.name};
     });
@@ -51,7 +53,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
         _selectedCategoryId == null) {
-          print("${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}");
+      print(
+        "${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}",
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Vui lòng điền đầy đủ thông tin (Tên, Giá, Danh mục)"),
@@ -140,15 +144,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     return FutureBuilder(
       future: _authService.getAccout(),
       builder: (context, asyncSnapshot) {
-            if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-            if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-              return const Center(child: Text('Không tìm thấy nhà hàng.'));
-            }
+        if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const Center(child: Text('Không tìm thấy nhà hàng.'));
+        }
 
-            final restaurantId = asyncSnapshot.data!;
+        final restaurantId = asyncSnapshot.data!;
         return Container(
           margin: const EdgeInsets.all(24),
           padding: const EdgeInsets.all(16),
@@ -184,20 +188,22 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                     ),
                   ),
                   onPressed: () {
-                    _openAddProductModal(restaurantId: restaurantId.restaurantId);
+                    _openAddProductModal(
+                      restaurantId: restaurantId.restaurantId,
+                    );
                   },
                 ),
               ),
               const SizedBox(height: 16),
-              _buildProductTable(restaurantId.restaurantId),
+              _buildProductTable(restaurantId:  restaurantId.restaurantId),
             ],
           ),
         );
-      }
+      },
     );
   }
 
-  Widget _buildProductTable(String restaurantId) {
+  Widget _buildProductTable({required String restaurantId}) {
     return StreamBuilder<List<Product>>(
       stream: _productService.getAllProducts(restaurantId),
       builder: (context, snapshot) {
@@ -207,7 +213,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             child: Center(child: CircularProgressIndicator()),
           );
         }
-    
+
         if (snapshot.hasError) {
           return Padding(
             padding: const EdgeInsets.all(16),
@@ -215,16 +221,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           );
         }
         // ---------------
-    
+
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Padding(
             padding: EdgeInsets.all(16),
             child: Center(child: Text("Chưa có sản phẩm nào được thêm.")),
           );
         }
-    
+
         final products = snapshot.data!;
-    
+
         return BaseTable(
           columnWidths: const {
             0: FlexColumnWidth(3), // Tên
@@ -252,7 +258,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             // Lấy tên danh mục từ Map đã tải
             final categoryName =
                 _categoryNameMap[prod.categoryId] ?? "Không rõ";
-    
+
             return TableRow(
               children: [
                 DataCellWidgetText(content: prod.name),
@@ -265,7 +271,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ),
                 DataCellWidgetAction(
                   editAction: () async {
-                    _openAddProductModal(product: prod, restaurantId: restaurantId);
+                    _openAddProductModal(
+                      product: prod,
+                      restaurantId: restaurantId,
+                    );
                   },
                   deleteAction: () async {
                     _deleteProduct(product: prod);
@@ -320,10 +329,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             hintText: "Chọn danh mục",
             stream: _categoryService.getAllCategories(restaurantId),
             selectedValue: _selectedCategoryId,
-            onChanged: (value) => {
-              _selectedCategoryId = value.toString(),
-            },
-            validator: (value) => value == null ? "Vui lòng chọn danh mục" : null,
+            onChanged: (value) => {_selectedCategoryId = value.toString()},
+            validator: (value) =>
+                value == null ? "Vui lòng chọn danh mục" : null,
           ),
         ],
         onSubmit: () async {

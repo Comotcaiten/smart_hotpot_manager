@@ -28,15 +28,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return const AdminCategoryScreen();
       case AdminView.overview:
         return const AdminOverviewScreen();
-      // case AdminView.table:
-      //   return const AdminTableScreen();
       case AdminView.table:
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const Text("data"),
-          ),
-        );
+        return const AdminTableScreen();
+      // case AdminView.table:
+      //   return Center(
+      //     child: Padding(
+      //       padding: const EdgeInsets.all(8.0),
+      //       child: const Text("data"),
+      //     ),
+      //   );
       case AdminView.account:
         return const AdminAccountcreen();
       case AdminView.order:
