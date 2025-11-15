@@ -91,31 +91,46 @@ class DataCellWidgetAction extends StatelessWidget {
 }
 
 class DataCellWidgetBadge extends StatelessWidget {
-  const DataCellWidgetBadge({super.key, required this.option_1, required this.option_2, required this.inStock});
+  const DataCellWidgetBadge({
+    super.key,
+    required this.statusKey,
+    required this.options,
+  });
 
-  final bool inStock;
-  
-  final String option_1;
-  final String option_2;
+  final String statusKey; // ví dụ: 'in_stock' hoặc 'out_stock'
+  final Map<String, BadgeColorData> options;
 
   @override
   Widget build(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: inStock ? Colors.black : Colors.red.shade400,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          inStock ? option_1 : option_2,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+    final data = options[statusKey];
+
+    if (data == null) {
+      return const SizedBox(); // tránh crash nếu key không tồn tại
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: data.color,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            data.text,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
+}
+
+class BadgeColorData {
+  final String text;
+  final Color color;
+
+  BadgeColorData({required this.text, required this.color});
 }

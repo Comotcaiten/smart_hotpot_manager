@@ -4,6 +4,8 @@ class AppRoutes {
   static const String REGISTER = '/register';
   static const String DASHBOARD = '/dashboard';
   static const String STAFF_HOME = '/staff_home';
+  static const String TABLE = '/table';
+  static const String MENU = '/menu';
 }
 
 // Regex pattern

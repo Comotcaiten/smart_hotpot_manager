@@ -5,15 +5,24 @@ import 'package:smart_hotpot_manager/screens/admin_dashboard_screen.dart';
 import 'package:smart_hotpot_manager/screens/login_screen.dart';
 import 'package:smart_hotpot_manager/screens/register_screen.dart';
 import 'package:smart_hotpot_manager/screens/staff_home_screen.dart';
+import 'package:smart_hotpot_manager/screens/table/table_selection_screen.dart';
 import 'package:smart_hotpot_manager/screens/welcome_screen.dart';
+import 'package:smart_hotpot_manager/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
+// import 'package:smart_hotpot_manager/screens/table/menu_screen.dart';
 // import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CartProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -34,6 +43,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.REGISTER: (BuildContext context) => RegisterScreen(),
         AppRoutes.DASHBOARD: (BuildContext context) => AdminDashboardScreen(),
         AppRoutes.STAFF_HOME: (BuildContext context) => StaffHomeScreen(),
+        AppRoutes.TABLE: (BuildContext context) => TableSelectionScreen(),
       },
     );
   }

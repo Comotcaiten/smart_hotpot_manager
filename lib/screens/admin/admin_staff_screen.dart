@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/account.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/utils/utils.dart';
+import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
@@ -109,8 +110,13 @@ class _AdminAccountcreenState extends State<AdminAccountcreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionHeaderIconLead(
-            title: "Quản lý staff",
-            subtitle: "Thêm, sửa, xóa staff",
+            title: "Quản lý account",
+            subtitle: "Thêm, sửa, xóa account",
+               icon: AppIcon(
+                  size: 46,
+                  icon: Icons.person,
+                  colors: [Colors.blueAccent, Colors.black],
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -118,7 +124,7 @@ class _AdminAccountcreenState extends State<AdminAccountcreen> {
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm staff"),
+              label: const Text("Thêm account"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,

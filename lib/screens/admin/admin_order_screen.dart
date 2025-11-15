@@ -30,7 +30,6 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   // Map để tra cứu tên Bàn (tableId -> tableName)
   Map<String, String> _tableNameMap = {};
 
-
   @override
   void initState() {
     super.initState();
@@ -63,12 +62,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(
-      content: Text(notification),
-      backgroundColor: Colors.red,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(notification), backgroundColor: Colors.red),
+    );
   }
 
   @override
@@ -99,7 +95,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
             border: Border.all(color: Colors.grey.shade300),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Sửa: bỏ MainAxisAlignment
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Sửa: bỏ MainAxisAlignment
             children: [
               SectionHeaderIconLead(
                 title: "Tất cả đơn hàng", // Sửa
@@ -111,102 +108,169 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildOrderTable(restaurantId: restaurantId.restaurantId)
+              _buildOrderTable(restaurantId: restaurantId.restaurantId),
             ],
           ),
         );
-      }
+      },
     );
   }
 
-  Widget _buildOrderTable({required String restaurantId}) { // Sửa
+  Widget _buildOrderTable({required String restaurantId}) {
+    // Sửa
     // Định dạng tiền tệ và thời gian
-    final currencyFormat = NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ');
+    final currencyFormat = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'VNĐ',
+    );
     final timeFormat = DateFormat('HH:mm');
 
-    return StreamBuilder<List<Order>>( // Sửa
-      stream: _orderService.getAllOrders(restaurantId), // Sửa
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(child: Text("Lỗi tải dữ liệu: ${snapshot.error}")),
-          );
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có đơn hàng nào.")), // Sửa
-          );
-        }
+        return StreamBuilder<List<Order>>(
+          // Sửa
+          stream: _orderService.getAllOrders(restaurantId), // Sửa
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-        final orders = snapshot.data!; // Sửa
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text("Lỗi tải dữ liệu: ${snapshot.error}"),
+                ),
+              );
+            }
 
-        return BaseTable(
-          // Sửa: 6 cột
-          columnWidths: const { 
-            0: FlexColumnWidth(2), // Mã đơn
-            1: FlexColumnWidth(1.5), // Bàn
-            2: FlexColumnWidth(2), // Trạng thái
-            3: FlexColumnWidth(1.5), // Thời gian
-            4: FlexColumnWidth(2), // Tổng tiền
-            5: FlexColumnWidth(1.5), // Thao tác
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: Text("Chưa có đơn hàng nào.")), // Sửa
+              );
+            }
+
+            final orders = snapshot.data!; // Sửa
+
+            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+            if (isWide) {
+              return BaseTable(
+                // Sửa: 6 cột
+                columnWidths: const {
+                  0: FlexColumnWidth(2), // Mã đơn
+                  1: FlexColumnWidth(1.5), // Bàn
+                  2: FlexColumnWidth(2), // Trạng thái
+                  3: FlexColumnWidth(1.5), // Thời gian
+                  4: FlexColumnWidth(2), // Tổng tiền
+                  5: FlexColumnWidth(1.5), // Thao tác
+                },
+                buildHeaderRow: const TableRow(
+                  children: [
+                    // Sửa: 6 cột
+                    HeaderCellWidgetText(content: "Mã đơn"),
+                    HeaderCellWidgetText(content: "Bàn"),
+                    HeaderCellWidgetText(
+                      content: "Trạng thái",
+                      align: TextAlign.left,
+                    ),
+                    HeaderCellWidgetText(content: "Thời gian"),
+                    HeaderCellWidgetText(content: "Tổng tiền"),
+                    HeaderCellWidgetText(
+                      content: "Thao tác",
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+                buildDataRow: orders.map((order) {
+                  // Sửa
+                  // Lấy tên bàn từ Map
+                  final tableName = _tableNameMap[order.tableId] ?? "N/A";
+
+                  return TableRow(
+                    children: [
+                      DataCellWidgetText(content: order.id), // Sửa
+                      DataCellWidgetText(content: tableName), // Sửa
+                      // Tái sử dụng DataCellWidgetBadge của bạn
+                      DataCellWidgetBadge(
+                      statusKey: order.status.name,
+                        options: {
+                          StatusOrder.pending.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.orangeAccent,
+                          ),
+                          StatusOrder.preparing.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.blueAccent,
+                          ),
+                          StatusOrder.complete.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.green,
+                          ),
+                          StatusOrder.paid.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.black,
+                          ),
+                        },
+                      ),
+                      DataCellWidgetText(
+                        content: timeFormat.format(order.createAt),
+                      ), // Sửa
+                      DataCellWidgetText(
+                        content: currencyFormat.format(order.totalAmount),
+                      ), // Sửa
+                      // Tái sử dụng DataCellWidgetAction của bạn
+                      DataCellWidgetAction(
+                        editAction: () async {
+                          // "Edit" -> Mở modal đổi trạng thái
+                          _openUpdateStatusModal(order: order);
+                        },
+                        deleteAction: () async {
+                          _deleteOrder(order: order);
+                        },
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            } else {
+              return Column(
+                children: orders.map((cat) {
+                  final tableName = _tableNameMap[cat.tableId] ?? "N/A";
+                  bool isPaid = cat.status == StatusOrder.complete || cat.status == StatusOrder.paid;
+                  final newMap = {
+                    ...cat.toMap(),
+                    'tableName': tableName,
+                    'total_amount': currencyFormat.format(cat.totalAmount),
+                    'status': isPaid ? "Đã phục vụ" : "Trong quá trình",
+                    'time': cat.createAt
+                  };  
+                  return ModelInfoSection(
+                    titles: {
+                      'id': 'Mã đơn:',
+                      'tableName': 'Bàn:',
+                      'total_amount': 'Giá:',
+                      'status': 'Trạng thái:',
+                      'time': 'Thời gian',
+                    },
+                    contents: newMap,
+                    editAction: () async {
+                      // "Edit" -> Mở modal đổi trạng thái
+                      _openUpdateStatusModal(order: cat);
+                    },
+                    deleteAction: () async {
+                      _deleteOrder(order: cat);
+                    },
+                  );
+                }).toList(),
+              );
+            }
           },
-          buildHeaderRow: const TableRow(
-            children: [ // Sửa: 6 cột
-              HeaderCellWidgetText(content: "Mã đơn"),
-              HeaderCellWidgetText(content: "Bàn"),
-              HeaderCellWidgetText(content: "Trạng thái", align: TextAlign.left),
-              HeaderCellWidgetText(content: "Thời gian"),
-              HeaderCellWidgetText(content: "Tổng tiền"),
-              HeaderCellWidgetText(
-                content: "Thao tác",
-                align: TextAlign.center,
-              ),
-            ],
-          ),
-          buildDataRow: orders.map((order) { // Sửa
-            // Lấy tên bàn từ Map
-            final tableName = _tableNameMap[order.tableId] ?? "N/A";
-            
-            // Logic cho màu Badge: 
-            // Giả sử "Đã thanh toán" là `inStock: true` (màu đen)
-            // Các trạng thái còn lại là `inStock: false` (màu đỏ)
-            bool isPaid = order.status == StatusOrder.paid;
-
-            return TableRow(
-              children: [
-                DataCellWidgetText(content: order.id), // Sửa
-                DataCellWidgetText(content: tableName), // Sửa
-                // Tái sử dụng DataCellWidgetBadge của bạn
-                DataCellWidgetBadge(
-                  option_1: order.statusString, // Hiển thị "Đang chuẩn bị", v.v.
-                  option_2: " ", // Bắt buộc phải có (dựa trên lỗi trước)
-                  inStock: isPaid,
-                ),
-                DataCellWidgetText(content: timeFormat.format(order.createAt)), // Sửa
-                DataCellWidgetText(content: currencyFormat.format(order.totalAmount)), // Sửa
-                // Tái sử dụng DataCellWidgetAction của bạn
-                DataCellWidgetAction(
-                  editAction: () async {
-                    // "Edit" -> Mở modal đổi trạng thái
-                    _openUpdateStatusModal(order: order);
-                  },
-                  deleteAction: () async {
-                    _deleteOrder(order: order);
-                  },
-                ),
-              ],
-            );
-          }).toList(),
         );
       },
     );
@@ -215,7 +279,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
   // Hàm mới: Mở modal để Cập nhật trạng thái
   // (Không thể dùng ModalForm của bạn vì nó không hỗ trợ Dropdown)
   void _openUpdateStatusModal({required Order order}) {
-    StatusOrder newSelectedStatus = order.status; 
+    StatusOrder newSelectedStatus = order.status;
 
     showDialog(
       context: context,
@@ -226,17 +290,23 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
               title: Text("Đổi trạng thái (Đơn: ${order.id})"),
               content: DropdownButtonFormField<StatusOrder>(
                 value: newSelectedStatus,
-                decoration: const InputDecoration(
-                  labelText: "Trạng thái mới",
-                ),
+                decoration: const InputDecoration(labelText: "Trạng thái mới"),
                 items: StatusOrder.values.map((StatusOrder status) {
                   // Dùng statusString để hiển thị Tiếng Việt
                   return DropdownMenuItem<StatusOrder>(
                     value: status,
-                    child: Text(Order( // Tạo instance tạm để lấy string
-                       id: '', restaurantId: '', tableId: '', status: status, 
-                      totalAmount: 0, createAt: DateTime.now(), updateAt: DateTime.now()
-                    ).statusString),
+                    child: Text(
+                      Order(
+                        // Tạo instance tạm để lấy string
+                        id: '',
+                        restaurantId: '',
+                        tableId: '',
+                        status: status,
+                        totalAmount: 0,
+                        createAt: DateTime.now(),
+                        updateAt: DateTime.now(),
+                      ).statusString,
+                    ),
                   );
                 }).toList(),
                 onChanged: (StatusOrder? newValue) {
@@ -256,9 +326,12 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                   onPressed: () async {
                     final nav = Navigator.of(context);
                     final messenger = ScaffoldMessenger.of(context);
-                    
-                    await _orderService.updateOrderStatus(order.id, newSelectedStatus);
-                    
+
+                    await _orderService.updateOrderStatus(
+                      order.id,
+                      newSelectedStatus,
+                    );
+
                     nav.pop(); // Đóng modal
                     messenger.showSnackBar(
                       const SnackBar(

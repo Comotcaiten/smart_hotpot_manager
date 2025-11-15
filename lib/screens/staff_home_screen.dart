@@ -1,5 +1,8 @@
+// lib/screens/staff_home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:smart_hotpot_manager/responsitories/staff_order_repository.dart';
+import 'package:smart_hotpot_manager/models/order.dart';
+import 'package:smart_hotpot_manager/services/order_service.dart';
+import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/widgets/staff_order_card.dart';
 import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
@@ -11,14 +14,10 @@ class StaffHomeScreen extends StatefulWidget {
 }
 
 class _StaffHomeScreenState extends State<StaffHomeScreen> {
-  final StaffOrderRepository _repository = StaffOrderRepository();
-  late Future<List<StaffOrder>> _ordersFuture;
+  final OrderService _orderService = OrderService();
+  final AuthService _authService = AuthService();
 
-  @override
-  void initState() {
-    super.initState();
-    _ordersFuture = _repository.getOrders();
-  }
+  late String restaurantId;
 
   @override
   Widget build(BuildContext context) {
@@ -27,78 +26,94 @@ class _StaffHomeScreenState extends State<StaffHomeScreen> {
         title: "Smart Hotpot Manager",
         subtitle: "Staff Dashboard",
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWide = constraints.maxWidth >= 1090;
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(height: 8.0),
+            _buildStatusLegend(),
+            SizedBox(height: 8.0),
+            FutureBuilder(
+              future: _authService.getAccout(),
+              builder: (context, snapshotAcc) {
+                if (snapshotAcc.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                _buildStatusLegend(),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: FutureBuilder<List<StaffOrder>>(
-                    future: _ordersFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+                if (!snapshotAcc.hasData || snapshotAcc.data == null) {
+                  return const Center(child: Text("Không tìm thấy nhà hàng."));
+                }
 
-                      if (snapshot.hasError) {
-                        return Center(
-                            child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
-                      }
+                restaurantId = snapshotAcc.data!.restaurantId;
 
-                      final orders = snapshot.data ?? [];
-                      if (orders.isEmpty) {
-                        return const Center(child: Text("Không có đơn hàng nào."));
-                      }
+                return StreamBuilder<List<Order>>(
+                  stream: _orderService.getAllOrders(restaurantId),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                      // Phân loại đơn
-                      final pending = orders
-                          .where((o) => o.status == OrderStatus.pending)
-                          .toList();
-                      final preparing = orders
-                          .where((o) => o.status == OrderStatus.preparing)
-                          .toList();
-                      final completed = orders
-                          .where((o) => o.status == OrderStatus.completed)
-                          .toList();
-
-                      final columns = [
-                        _buildOrderColumn("Chờ xử lý", pending),
-                        _buildOrderColumn("Đang chuẩn bị", preparing),
-                        _buildOrderColumn("Đã hoàn thành", completed),
-                      ];
-
-                      return SingleChildScrollView(
-                        child: Center(
-                          child: isWide
-                              ? Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: columns,
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: columns,
-                                ),
-                        ),
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text("Lỗi tải dữ liệu: ${snapshot.error}"),
                       );
-                    },
-                  ),
-                ),
-              ],
+                    }
+
+                    final orders = snapshot.data ?? [];
+                    if (orders.isEmpty) {
+                      return const Center(
+                        child: Text("Không có đơn hàng nào."),
+                      );
+                    }
+
+                    // Phân loại đơn
+                    final pending = orders
+                        .where((o) => o.status == StatusOrder.pending)
+                        .toList();
+                    final preparing = orders
+                        .where((o) => o.status == StatusOrder.preparing)
+                        .toList();
+                    final completed = orders
+                        .where((o) => o.status == StatusOrder.complete)
+                        .toList();
+
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isWide = constraints.maxWidth >= 1090;
+                        final columns = [
+                          _buildOrderColumn("Chờ xử lý", pending),
+                          _buildOrderColumn("Đang chuẩn bị", preparing),
+                          _buildOrderColumn("Hoàn thành", completed),
+                        ];
+
+                        return SingleChildScrollView(
+                          child: Center(
+                            child: isWide
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: columns,
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: columns,
+                                  ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildOrderColumn(String title, List<StaffOrder> orders) {
+  Widget _buildOrderColumn(String title, List<Order> orders) {
     return Container(
       width: 320,
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -112,13 +127,22 @@ class _StaffHomeScreenState extends State<StaffHomeScreen> {
               fontWeight: FontWeight.bold,
               color: Colors.black54,
             ),
+    overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
           ListView.builder(
             itemCount: orders.length,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, i) => StaffOrderCard(order: orders[i]),
+            itemBuilder: (context, i) {
+              final order = orders[i];
+              return StaffOrderCard(
+                order: order,
+                onStatusChanged: (newStatus) {
+                  _orderService.updateOrderStatus(order.id, newStatus);
+                },
+              );
+            },
           ),
         ],
       ),
@@ -127,24 +151,24 @@ class _StaffHomeScreenState extends State<StaffHomeScreen> {
 
   Widget _buildStatusLegend() {
     Widget legendItem(Color color, String text) => Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration:
-                  BoxDecoration(color: color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-            Text(text, style: const TextStyle(color: Colors.black87)),
-            const SizedBox(width: 16),
-          ],
-        );
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(text, style: const TextStyle(color: Colors.black87)),
+        const SizedBox(width: 16),
+      ],
+    );
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        legendItem(Colors.orange, "Chờ"),
-        legendItem(Colors.blue.shade700, "Đang làm"),
+        legendItem(Colors.orange, "Chờ xử lý"),
+        legendItem(Colors.blue.shade700, "Đang chuẩn bị"),
+        legendItem(Colors.green.shade700, "Hoàn thành"),
       ],
     );
   }

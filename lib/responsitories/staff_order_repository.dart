@@ -1,107 +1,153 @@
-// lib/repositories/staff_order_repository.dart
+// // lib/screens/staff_home_screen.dart
 // import 'package:flutter/material.dart';
+// import 'package:smart_hotpot_manager/models/order.dart';
+// import 'package:smart_hotpot_manager/services/order_service.dart';
+// import 'package:smart_hotpot_manager/services/auth_service.dart';
+// import 'package:smart_hotpot_manager/widgets/staff_order_card.dart';
+// import 'package:smart_hotpot_manager/widgets/title_app_bar.dart';
 
-// --- PHẦN 1: MODELS TẠM THỜI ---
-// (Sau này bạn có thể chuyển 3 class/enum này vào thư mục /models/ của bạn)
+// class StaffHomeScreen extends StatefulWidget {
+//   const StaffHomeScreen({super.key});
 
-// Enum để định nghĩa các trạng thái
-enum OrderStatus { pending, preparing, completed }
+//   @override
+//   State<StaffHomeScreen> createState() => _StaffHomeScreenState();
+// }
 
-// Model cho một món trong đơn
-class OrderItem {
-  final String name;
-  final int quantity;
-  final String? note; // Ghi chú (có thể có hoặc không)
+// class _StaffHomeScreenState extends State<StaffHomeScreen> {
+//   final OrderService _orderService = OrderService();
+//   final AuthService _authService = AuthService();
 
-  OrderItem({required this.name, required this.quantity, this.note});
-}
+//   late String restaurantId;
 
-// Model cho một đơn hàng
-class StaffOrder {
-  final String id;
-  final String tableName;
-  final String time;
-  final OrderStatus status;
-  final List<OrderItem> items;
-  final bool isPriority; // Đánh dấu đơn ưu tiên
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: const TitleAppBar(
+//         title: "Smart Hotpot Manager",
+//         subtitle: "Staff Dashboard",
+//       ),
+//       body: FutureBuilder(
+//         future: _authService.getAccout(),
+//         builder: (context, snapshotAcc) {
+//           if (snapshotAcc.connectionState == ConnectionState.waiting) {
+//             return const Center(child: CircularProgressIndicator());
+//           }
 
-  StaffOrder({
-    required this.id,
-    required this.tableName,
-    required this.time,
-    required this.status,
-    required this.items,
-    this.isPriority = false,
-  });
-}
+//           if (!snapshotAcc.hasData || snapshotAcc.data == null) {
+//             return const Center(child: Text("Không tìm thấy nhà hàng."));
+//           }
 
-// --- PHẦN 2: REPOSITORY VỚI DỮ LIỆU GIẢ ---
+//           restaurantId = snapshotAcc.data!.restaurantId;
 
-class StaffOrderRepository {
-  // 
-  // ===================================================================
-  // SAU NÀY KẾT NỐI DATABASE
-  // ===================================================================
-  // Bạn sẽ thay thế hàm getOrders() này để gọi Firebase/API thật.
-  // Miễn là nó trả về đúng `Future<List<StaffOrder>>`,
-  // toàn bộ giao diện sẽ tự động cập nhật mà không cần sửa file khác.
-  //
-  Future<List<StaffOrder>> getOrders() async {
-    // Giả lập độ trễ mạng khi gọi DB
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _mockOrders;
-  }
-  // ===================================================================
-  // 
+//           return StreamBuilder<List<Order>>(
+//             stream: _orderService.getAllOrders(restaurantId),
+//             builder: (context, snapshot) {
+//               if (snapshot.connectionState == ConnectionState.waiting) {
+//                 return const Center(child: CircularProgressIndicator());
+//               }
 
-  // Dữ liệu giả (mock data) dựa trên hình ảnh của bạn
-  final List<StaffOrder> _mockOrders = [
-    // --- Đơn Chờ xử lý 1 ---
-    StaffOrder(
-      id: "ORD001",
-      tableName: "Bàn 1",
-      time: "10:30",
-      status: OrderStatus.pending,
-      items: [
-        OrderItem(quantity: 1, name: "Lẩu Thái"),
-        OrderItem(quantity: 2, name: "Bò Mỹ", note: "Ghi chú: Không hành"),
-        OrderItem(quantity: 1, name: "Rau củ tổng hợp"),
-      ],
-    ),
-    // --- Đơn Chờ xử lý 2 (Ưu tiên) ---
-    StaffOrder(
-      id: "ORD002",
-      tableName: "Bàn 4",
-      time: "10:35",
-      status: OrderStatus.pending,
-      isPriority: true, // Đơn này có viền đỏ
-      items: [
-        OrderItem(quantity: 2, name: "Lẩu Kim Chi", note: "Ghi chú: Cay nồng"),
-        OrderItem(quantity: 1, name: "Hải sản tươi"),
-        OrderItem(quantity: 2, name: "Nấm các loại"),
-      ],
-    ),
-    // --- Đơn Đang chuẩn bị ---
-    StaffOrder(
-      id: "ORD003",
-      tableName: "Bàn 7",
-      time: "10:25",
-      status: OrderStatus.preparing,
-      items: [
-        OrderItem(quantity: 1, name: "Lẩu Thái"),
-        OrderItem(quantity: 1, name: "Rau củ"),
-      ],
-    ),
-    // --- Đơn Đã hoàn thành ---
-    StaffOrder(
-      id: "ORD004",
-      tableName: "Bàn 3",
-      time: "10:15",
-      status: OrderStatus.completed,
-      items: [
-        OrderItem(quantity: 3, name: "Bò Mỹ"),
-        OrderItem(quantity: 1, name: "Hải sản", note: "Ghi chú: Tươi sống"),
-      ],
-    ),
-  ];
-}
+//               if (snapshot.hasError) {
+//                 return Center(child: Text("Lỗi tải dữ liệu: ${snapshot.error}"));
+//               }
+
+//               final orders = snapshot.data ?? [];
+//               if (orders.isEmpty) {
+//                 return const Center(child: Text("Không có đơn hàng nào."));
+//               }
+
+//               // Phân loại đơn
+//               final pending = orders.where((o) => o.status == StatusOrder.pending).toList();
+//               final preparing = orders.where((o) => o.status == StatusOrder.preparing).toList();
+//               final completed = orders.where((o) => o.status == StatusOrder.complete).toList();
+
+//               return LayoutBuilder(
+//                 builder: (context, constraints) {
+//                   final isWide = constraints.maxWidth >= 1090;
+//                   final columns = [
+//                     _buildOrderColumn("Chờ xử lý", pending),
+//                     _buildOrderColumn("Đang chuẩn bị", preparing),
+//                     _buildOrderColumn("Hoàn thành", completed),
+//                   ];
+
+//                   return SingleChildScrollView(
+//                     child: Center(
+//                       child: isWide
+//                           ? Row(
+//                               mainAxisAlignment: MainAxisAlignment.center,
+//                               crossAxisAlignment: CrossAxisAlignment.start,
+//                               children: columns,
+//                             )
+//                           : Column(
+//                               crossAxisAlignment: CrossAxisAlignment.center,
+//                               children: columns,
+//                             ),
+//                     ),
+//                   );
+//                 },
+//               );
+//             },
+//           );
+//         },
+//       ),
+//     );
+//   }
+
+//   Widget _buildOrderColumn(String title, List<Order> orders) {
+//     return Container(
+//       width: 320,
+//       margin: const EdgeInsets.symmetric(horizontal: 8),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             "$title (${orders.length})".toUpperCase(),
+//             style: const TextStyle(
+//               fontSize: 16,
+//               fontWeight: FontWeight.bold,
+//               color: Colors.black54,
+//             ),
+//           ),
+//           const SizedBox(height: 8),
+//           ListView.builder(
+//             itemCount: orders.length,
+//             shrinkWrap: true,
+//             physics: const NeverScrollableScrollPhysics(),
+//             itemBuilder: (context, i) {
+//               final order = orders[i];
+//               return StaffOrderCard(
+//                 order: order,
+//                 onStatusChanged: (newStatus) {
+//                   _orderService.updateOrderStatus(order.id, newStatus);
+//                 },
+//               );
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildStatusLegend() {
+//     Widget legendItem(Color color, String text) => Row(
+//           children: [
+//             Container(
+//               width: 12,
+//               height: 12,
+//               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+//             ),
+//             const SizedBox(width: 6),
+//             Text(text, style: const TextStyle(color: Colors.black87)),
+//             const SizedBox(width: 16),
+//           ],
+//         );
+
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.center,
+//       children: [
+//         legendItem(Colors.orange, "Chờ xử lý"),
+//         legendItem(Colors.blue.shade700, "Đang chuẩn bị"),
+//         legendItem(Colors.green.shade700, "Hoàn thành"),
+//       ],
+//     );
+//   }
+// }

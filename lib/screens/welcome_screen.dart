@@ -45,7 +45,7 @@ class _WelcomeHomeState extends State<WelcomeScreen> {
           // _notification();
 
         } else if (doc.role == RoleAccount.table) {
-          _notification();
+          Navigator.of(context).pushNamed(AppRoutes.TABLE, arguments: doc);
         }
         
       } else {

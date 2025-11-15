@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_hotpot_manager/models/category.dart';
 import 'package:smart_hotpot_manager/services/auth_service.dart';
 import 'package:smart_hotpot_manager/services/category_service.dart';
+import 'package:smart_hotpot_manager/widgets/app_icon.dart';
 import 'package:smart_hotpot_manager/widgets/section_custom.dart';
 import 'package:smart_hotpot_manager/widgets/table_widget.dart';
 import 'package:smart_hotpot_manager/widgets/modal_app.dart';
@@ -103,6 +104,11 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
           SectionHeaderIconLead(
             title: "Quản lý Danh mục",
             subtitle: "Thêm, sửa, xóa danh mục món ăn",
+                icon: AppIcon(
+                  size: 46,
+                  icon: Icons.category,
+                  colors: [Colors.deepOrange, Colors.black],
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -110,7 +116,7 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               icon: const Icon(Icons.add, size: 18),
-              label: const Text("Thêm món mới"),
+              label: const Text("Thêm danh mục mới"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,

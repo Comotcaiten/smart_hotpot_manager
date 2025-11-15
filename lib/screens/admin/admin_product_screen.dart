@@ -24,6 +24,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   // Controllers
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
+  final _imageLinkController = TextEditingController();
   String? _selectedCategoryId;
 
   // Map để tra cứu tên Category
@@ -52,9 +53,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     if (_nameController.text.isEmpty ||
         _priceController.text.isEmpty ||
+        _imageLinkController.text.isEmpty ||
         _selectedCategoryId == null) {
       print(
-        "${_nameController.text} , ${_priceController.text} , ${_selectedCategoryId.toString()}",
+        "${_nameController.text} , ${_priceController.text} , ${_imageLinkController.text} , ${_selectedCategoryId.toString()}",
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -75,10 +77,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         restaurantId: res!.restaurantId,
         id: "",
         name: _nameController.text.trim(),
-        price: int.tryParse(_priceController.text.trim()) ?? 0,
+        price: double.tryParse(_priceController.text.trim()) ?? 0,
         categoryId: _selectedCategoryId!,
         delete: false,
-        imageUrl: "",
+        imageUrl: _imageLinkController.text.trim(),
         createAt: now,
         updateAt: now,
       );
@@ -91,10 +93,10 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           restaurantId: product.restaurantId,
           id: product.id,
           name: _nameController.text.trim(),
-          price: int.tryParse(_priceController.text.trim()) ?? 0,
+          price: double.tryParse(_priceController.text.trim()) ?? 0,
           categoryId: _selectedCategoryId!,
           delete: product.delete,
-          imageUrl: product.imageUrl,
+          imageUrl: _imageLinkController.text.trim(),
           createAt: product.createAt,
           updateAt: now,
         ),
@@ -105,6 +107,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     _nameController.clear();
     _priceController.clear();
+    _imageLinkController.clear();
     _selectedCategoryId = null;
 
     String notification = product == null
@@ -195,7 +198,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildProductTable(restaurantId:  restaurantId.restaurantId),
+              _buildProductTable(restaurantId: restaurantId.restaurantId),
             ],
           ),
         );
@@ -204,85 +207,117 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   }
 
   Widget _buildProductTable({required String restaurantId}) {
-    return StreamBuilder<List<Product>>(
-      stream: _productService.getAllProducts(restaurantId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
 
-        if (snapshot.hasError) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Center(child: Text("Lỗi tải sản phẩm: ${snapshot.error}")),
-          );
-        }
-        // ---------------
+        return StreamBuilder<List<Product>>(
+          stream: _productService.getAllProducts(restaurantId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: Text("Chưa có sản phẩm nào được thêm.")),
-          );
-        }
+            if (snapshot.hasError) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text("Lỗi tải sản phẩm: ${snapshot.error}"),
+                ),
+              );
+            }
+            // ---------------
 
-        final products = snapshot.data!;
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(child: Text("Chưa có sản phẩm nào được thêm.")),
+              );
+            }
 
-        return BaseTable(
-          columnWidths: const {
-            0: FlexColumnWidth(3), // Tên
-            1: FlexColumnWidth(2), // Giá
-            2: FlexColumnWidth(2), // Danh mục
-            3: FlexColumnWidth(2), // Trạng thái
-            4: FlexColumnWidth(1.5), // Thao tác
+            final products = snapshot.data!;
+
+            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+            if (isWide) {
+              return BaseTable(
+                columnWidths: const {
+                  0: FlexColumnWidth(3), // Tên
+                  1: FlexColumnWidth(2), // Giá
+                  2: FlexColumnWidth(2), // Danh mục
+                  3: FlexColumnWidth(2), // Trạng thái
+                  4: FlexColumnWidth(1.5), // Thao tác
+                },
+                buildHeaderRow: const TableRow(
+                  children: [
+                    HeaderCellWidgetText(content: "Tên sản phẩm"),
+                    HeaderCellWidgetText(content: "Giá"),
+                    HeaderCellWidgetText(content: "Danh mục"),
+                    HeaderCellWidgetText(
+                      content: "Trạng thái",
+                      align: TextAlign.left,
+                    ),
+                    HeaderCellWidgetText(
+                      content: "Thao tác",
+                      align: TextAlign.center,
+                    ),
+                  ],
+                ),
+                buildDataRow: products.map((prod) {
+                  // Lấy tên danh mục từ Map đã tải
+                  final categoryName =
+                      _categoryNameMap[prod.categoryId] ?? "Không rõ";
+
+                  return TableRow(
+                    children: [
+                      DataCellWidgetText(content: prod.name),
+                      DataCellWidgetText(content: "${prod.price} VNĐ"),
+                      DataCellWidgetText(content: categoryName),
+                      DataCellWidgetBadge(
+                        statusKey: !prod.delete ? "show" : "hide",
+                        options: {
+                          "show": BadgeColorData(text: "Hiển thị", color: Colors.green),
+                          "hide": BadgeColorData(text: "Ẩn", color: Colors.redAccent),
+                        },
+                      ),
+
+                      DataCellWidgetAction(
+                        editAction: () async {
+                          _openAddProductModal(
+                            product: prod,
+                            restaurantId: restaurantId,
+                          );
+                        },
+                        deleteAction: () async {
+                          _deleteProduct(product: prod);
+                        },
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            } else {
+              return Column(
+                children: products.map((cat) {
+                  return ModelInfoSection(
+                    titles: {'name': 'Tên:', 'price': 'Giá:'},
+                    contents: cat.toMap(),
+                    editAction: () async {
+                      _openAddProductModal(
+                        product: cat,
+                        restaurantId: restaurantId,
+                      );
+                    },
+                    deleteAction: () async {
+                      _deleteProduct(product: cat);
+                    },
+                  );
+                }).toList(),
+              );
+            }
           },
-          buildHeaderRow: const TableRow(
-            children: [
-              HeaderCellWidgetText(content: "Tên sản phẩm"),
-              HeaderCellWidgetText(content: "Giá"),
-              HeaderCellWidgetText(content: "Danh mục"),
-              HeaderCellWidgetText(
-                content: "Trạng thái",
-                align: TextAlign.left,
-              ),
-              HeaderCellWidgetText(
-                content: "Thao tác",
-                align: TextAlign.center,
-              ),
-            ],
-          ),
-          buildDataRow: products.map((prod) {
-            // Lấy tên danh mục từ Map đã tải
-            final categoryName =
-                _categoryNameMap[prod.categoryId] ?? "Không rõ";
-
-            return TableRow(
-              children: [
-                DataCellWidgetText(content: prod.name),
-                DataCellWidgetText(content: "${prod.price} VNĐ"),
-                DataCellWidgetText(content: categoryName),
-                DataCellWidgetBadge(
-                  option_1: "Hiển thị",
-                  option_2: "Ẩn",
-                  inStock: !prod.delete,
-                ),
-                DataCellWidgetAction(
-                  editAction: () async {
-                    _openAddProductModal(
-                      product: prod,
-                      restaurantId: restaurantId,
-                    );
-                  },
-                  deleteAction: () async {
-                    _deleteProduct(product: prod);
-                  },
-                ),
-              ],
-            );
-          }).toList(),
         );
       },
     );
@@ -293,6 +328,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     // Đặt giá trị ban đầu cho modal
     _nameController.text = product?.name ?? '';
     _priceController.text = product?.price.toString() ?? '';
+    _imageLinkController.text = product?.imageUrl ?? '';
     _selectedCategoryId = product?.categoryId;
 
     showDialog(
@@ -304,6 +340,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             label: "Tên sản phẩm",
             hintText: "VD: Lẩu Thái",
             controller: _nameController,
+            validator: (value) => value!.isEmpty ? "Không được để trống" : null,
+          ),
+
+          FormFieldDataText(
+            label: "Link hình ảnh",
+            hintText: "VD: https://example.com/image.jpg",
+            controller: _imageLinkController,
             validator: (value) => value!.isEmpty ? "Không được để trống" : null,
           ),
           FormFieldDataText(
