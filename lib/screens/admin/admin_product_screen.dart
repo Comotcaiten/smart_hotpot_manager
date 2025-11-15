@@ -276,10 +276,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       DataCellWidgetText(content: "${prod.price} VNĐ"),
                       DataCellWidgetText(content: categoryName),
                       DataCellWidgetBadge(
-                        option_1: "Hiển thị",
-                        option_2: "Ẩn",
-                        inStock: !prod.delete,
+                        statusKey: !prod.delete ? "show" : "hide",
+                        options: {
+                          "show": BadgeColorData(text: "Hiển thị", color: Colors.green),
+                          "hide": BadgeColorData(text: "Ẩn", color: Colors.redAccent),
+                        },
                       ),
+
                       DataCellWidgetAction(
                         editAction: () async {
                           _openAddProductModal(

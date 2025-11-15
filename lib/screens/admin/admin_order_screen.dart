@@ -192,22 +192,31 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
                   // Lấy tên bàn từ Map
                   final tableName = _tableNameMap[order.tableId] ?? "N/A";
 
-                  // Logic cho màu Badge:
-                  // Giả sử "Đã thanh toán" là `inStock: true` (màu đen)
-                  // Các trạng thái còn lại là `inStock: false` (màu đỏ)
-                  bool isPaid = order.status == StatusOrder.complete || order.status == StatusOrder.paid;
-
                   return TableRow(
                     children: [
                       DataCellWidgetText(content: order.id), // Sửa
                       DataCellWidgetText(content: tableName), // Sửa
                       // Tái sử dụng DataCellWidgetBadge của bạn
                       DataCellWidgetBadge(
-                        option_1:
-                            "Đã phục vụ", // Hiển thị "Đang chuẩn bị", v.v.
-                        option_2:
-                            "Trong quá trình", // Bắt buộc phải có (dựa trên lỗi trước)
-                        inStock: isPaid,
+                      statusKey: order.status.name,
+                        options: {
+                          StatusOrder.pending.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.orangeAccent,
+                          ),
+                          StatusOrder.preparing.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.blueAccent,
+                          ),
+                          StatusOrder.complete.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.green,
+                          ),
+                          StatusOrder.paid.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.black,
+                          ),
+                        },
                       ),
                       DataCellWidgetText(
                         content: timeFormat.format(order.createAt),

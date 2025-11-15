@@ -268,22 +268,26 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
                     // Lấy tên bàn từ Map
                     final tableName = _tableNameMap[order.tableId] ?? "N/A";
 
-                    // Logic cho Badge
-                    bool isInStock =
-                        order.status == StatusOrder.complete ||
-                        order.status == StatusOrder.served ||
-                        order.status == StatusOrder.paid;
-                    String option1 = order.statusString;
-                    String option2 = order.statusString;
-
                     return TableRow(
                       children: [
                         DataCellWidgetText(content: order.id),
                         DataCellWidgetText(content: tableName),
                         DataCellWidgetBadge(
-                          option_1: option1,
-                          option_2: option2,
-                          inStock: isInStock,
+                        statusKey: order.status.name,
+                        options: {
+                          StatusOrder.pending.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.orangeAccent,
+                          ),
+                          StatusOrder.preparing.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.blueAccent,
+                          ),
+                          StatusOrder.complete.name: BadgeColorData(
+                            text: order.statusString,
+                            color: Colors.green,
+                          ),
+                        },
                         ),
                         DataCellWidgetText(
                           content: timeFormat.format(order.createAt),

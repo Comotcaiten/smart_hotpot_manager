@@ -216,62 +216,85 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
             }
             final tables = snapshot.data!;
 
-                // Nếu màn hình rộng (>=1280px) → hiển thị bảng
-                if (isWide) {
-                return BaseTable(
-              columnWidths: const {
-                0: FlexColumnWidth(2),
-                1: FlexColumnWidth(2),
-                2: FlexColumnWidth(2),
-                3: FlexColumnWidth(1.5),
-              },
-              buildHeaderRow: const TableRow(
-                children: [
-                  HeaderCellWidgetText(content: "Tên bàn"),
-                  HeaderCellWidgetText(content: "Số người"),
-                  HeaderCellWidgetText(
-                    content: "Trạng thái",
-                    align: TextAlign.left,
-                  ),
-                  HeaderCellWidgetText(
-                    content: "Thao tác",
-                    align: TextAlign.center,
-                  ),
-                ],
-              ),
-              buildDataRow: tables.map((table) {
-                return TableRow(
+            // Nếu màn hình rộng (>=1280px) → hiển thị bảng
+            if (isWide) {
+              return BaseTable(
+                columnWidths: const {
+                  0: FlexColumnWidth(2),
+                  1: FlexColumnWidth(2),
+                  2: FlexColumnWidth(2),
+                  3: FlexColumnWidth(1.5),
+                },
+                buildHeaderRow: const TableRow(
                   children: [
-                    DataCellWidgetText(content: table.name),
-                    DataCellWidgetText(content: table.seats.toString()),
-                    DataCellWidgetBadge(
-                      option_1: "Trống",
-                      option_2: "Có khách",
-                      inStock: table.status == StatusTable.empty,
+                    HeaderCellWidgetText(content: "Tên bàn"),
+                    HeaderCellWidgetText(content: "Số người"),
+                    HeaderCellWidgetText(
+                      content: "Trạng thái",
+                      align: TextAlign.left,
                     ),
-                    DataCellWidgetAction(
-                      editAction: () async {
-                        _openAddTableModal(
-                          table: table,
-                          restaurantId: restaurantId,
-                        );
-                      },
-                      deleteAction: () async {
-                        _deleteTable(table: table);
-                      },
+                    HeaderCellWidgetText(
+                      content: "Thao tác",
+                      align: TextAlign.center,
                     ),
                   ],
-                );
-              }).toList(),
-            );
-                }
-                else {
+                ),
+                buildDataRow: tables.map((table) {
+                  return TableRow(
+                    children: [
+                      DataCellWidgetText(content: table.name),
+                      DataCellWidgetText(content: table.seats.toString()),
+                      DataCellWidgetBadge(
+                        // option_1: "Trống",
+                        // option_2: "Có khách",
+                        // inStock: table.status == StatusTable.empty,
+                        statusKey: table.status.name,
+                        options: {
+                          StatusTable.inUse.name: BadgeColorData(
+                            text: 'Có khách',
+                            color: Colors.redAccent,
+                          ),
+
+                          StatusTable.empty.name: BadgeColorData(
+                            text: 'Trống',
+                            color: Colors.green,
+                          ),
+
+                          StatusTable.set.name: BadgeColorData(
+                            text: 'Đặt trước',
+                            color: Colors.blueAccent,
+                          ),
+                        },
+                      ),
+                      DataCellWidgetAction(
+                        editAction: () async {
+                          _openAddTableModal(
+                            table: table,
+                            restaurantId: restaurantId,
+                          );
+                        },
+                        deleteAction: () async {
+                          _deleteTable(table: table);
+                        },
+                      ),
+                    ],
+                  );
+                }).toList(),
+              );
+            } else {
               return Column(
                 children: tables.map((cat) {
                   final inStock = cat.status == StatusTable.empty;
-                  final newTable = {...cat.toMap(), 'status': inStock ? "Trống" : "Có khách"};
+                  final newTable = {
+                    ...cat.toMap(),
+                    'status': inStock ? "Trống" : "Có khách",
+                  };
                   return ModelInfoSection(
-                    titles: {'name': 'Tên:', 'seats': 'Chỗ ngồi:', 'status': "Trạng thái"},
+                    titles: {
+                      'name': 'Tên:',
+                      'seats': 'Chỗ ngồi:',
+                      'status': "Trạng thái",
+                    },
                     contents: newTable,
                     editAction: () async {
                       _openAddTableModal(
@@ -285,12 +308,10 @@ class _AdminTableScreenState extends State<AdminTableScreen> {
                   );
                 }).toList(),
               );
-
-                }
-            
+            }
           },
         );
-      }
+      },
     );
   }
 

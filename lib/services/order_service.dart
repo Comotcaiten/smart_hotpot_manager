@@ -57,13 +57,16 @@ class OrderService {
 
   // READ: Lấy OrderItem của 1 Order cụ thể
   Stream<List<OrderItem>> getOrderItems(String orderId) {
-    return orderItems.where('order_id', isEqualTo: orderId).snapshots().map((
-      snapshot,
-    ) {
-      return snapshot.docs.map((doc) {
-        return OrderItem.fromMap(doc.data() as Map<String, dynamic>);
-      }).toList();
-    });
+    final orderRef = orders.doc(orderId);
+
+    return orderRef
+        .collection('order_items')
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => OrderItem.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   // READ: Lấy table name của order
