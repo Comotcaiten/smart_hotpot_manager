@@ -170,7 +170,7 @@ class _CartWidgetState extends State<CartWidget> {
           backgroundColor: Colors.deepOrange.shade100,
         ),
         title: Text(item.product.name),
-        subtitle: Text(formatCurrency(item.product.price * item.quantity)),
+        subtitle: Text(formatCurrency(item.product.price * (item.quantity * 1.0))),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
